@@ -1,0 +1,11 @@
+[package]
+name = "big-oh-no"
+version = "0.1.0"
+edition = "2021"
+description = "A collection of utterly useless yet entertaining sorting algorithms"
+license = "MIT"
+
+[dependencies]
+# TODO: Add dependencies when implementing
+# colored = "2"
+# clap = { version = "4", features = ["derive"] }
