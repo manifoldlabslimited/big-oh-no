@@ -76,6 +76,12 @@ def show_algorithms_table():
         "NAKs patches that break monotonic order",
         "O(n) time, O(n) hurt feelings",
     )
+    table.add_row(
+        "bogo",
+        "🎲 The Gambler",
+        "Shuffle repeatedly until sorted",
+        "O((n+1)!) expected time",
+    )
     
     console.print(table)
 
@@ -94,6 +100,7 @@ def cli(ctx):
         big-oh-no wait 5 2 8 1 3
         big-oh-no stalin 5 1 9 2 8 3 10
         big-oh-no linus 3 1 7 2 9 5 12
+        big-oh-no bogo 3 2 1
     """
     if ctx.invoked_subcommand is None:
         show_banner()
@@ -310,6 +317,58 @@ def linus(numbers):
         style=style,
     ))
     ls.console.print()
+
+
+@cli.command()
+@click.option(
+    "--max-attempts",
+    default=10000,
+    show_default=True,
+    type=click.IntRange(min=1),
+    help="Maximum number of random shuffles before giving up.",
+)
+@click.argument('numbers', nargs=-1, type=int, required=True)
+def bogo(max_attempts, numbers):
+    """
+    🎲 Bogo Sort - Shuffle until the universe cooperates.
+
+    Repeatedly shuffles the list until it happens to be sorted.
+    Uses a maximum shuffle cap to avoid infinite despair.
+
+    \b
+    Examples:
+        big-oh-no bogo 3 2 1
+        big-oh-no bogo --max-attempts 5000 3 2 1
+    """
+    from . import bogo_sort as bs
+
+    nums = parse_numbers(numbers)
+    original = nums.copy()
+
+    bs.console.print()
+    bs.console.print(bs.create_header())
+
+    bs.console.print(Panel(
+        "[bold]How Bogo Sort Works:[/bold]\n\n"
+        "• Check if the list is sorted\n"
+        "• If not, [magenta]shuffle randomly[/magenta]\n"
+        "• Repeat until sorted or the attempt limit is hit\n"
+        "• Result: [bold green]Occasional success by luck[/bold green]\n\n"
+        "[dim]Complexity: O((n+1)!) expected time · O(1) extra space · 100% chaos[/dim]",
+        title="[bold cyan]💡 Algorithm Explanation[/bold cyan]",
+        box=box.ROUNDED,
+        padding=(1, 2),
+    ))
+
+    bs.console.print(f"\n[dim]Numbers:[/dim] [bold cyan]{nums}[/bold cyan]")
+
+    sorted_candidate, attempts, elapsed = bs.bogo_sort(nums, max_attempts=max_attempts)
+
+    bs.console.print()
+    bs.console.print(Align.center(bs.create_result_table(original, sorted_candidate, attempts, elapsed)))
+    bs.console.print()
+    bs.console.print(bs.create_result_panel(original, sorted_candidate, attempts, elapsed))
+    bs.console.print()
 
 
 def main():

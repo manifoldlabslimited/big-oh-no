@@ -47,6 +47,24 @@ class TestWaitCommand:
         assert result.exit_code != 0
 
 
+class TestBogoCommand:
+    def test_valid_input_succeeds(self, runner):
+        result = runner.invoke(cli, ["bogo", "1"])
+        assert result.exit_code == 0, result.output
+
+    def test_no_numbers_fails(self, runner):
+        result = runner.invoke(cli, ["bogo"])
+        assert result.exit_code != 0
+
+    def test_max_attempts_option_succeeds(self, runner):
+        result = runner.invoke(cli, ["bogo", "--max-attempts", "5", "1"])
+        assert result.exit_code == 0, result.output
+
+    def test_max_attempts_zero_fails_validation(self, runner):
+        result = runner.invoke(cli, ["bogo", "--max-attempts", "0", "1"])
+        assert result.exit_code != 0
+
+
 class TestListCommand:
     def test_list_succeeds(self, runner):
         result = runner.invoke(cli, ["list"])

@@ -1,3 +1,4 @@
+from big_oh_no import bogo_sort
 from big_oh_no import linus_sort
 from big_oh_no import stalin_sort
 from big_oh_no import wait_sort
@@ -27,3 +28,13 @@ def test_wait_sort_handles_duplicate_values(monkeypatch):
 
     assert len(sorted_nums) == 3
     assert len(wait_sort.completions) == len(sorted_nums)
+
+
+def test_bogo_sort_returns_sorted_list(monkeypatch):
+    # Force deterministic progress to keep the test fast and stable.
+    monkeypatch.setattr(bogo_sort.random, "shuffle", lambda values: values.sort())
+
+    sorted_nums, attempts, _ = bogo_sort.bogo_sort([3, 1, 2], max_attempts=5)
+
+    assert sorted_nums == [1, 2, 3]
+    assert attempts == 1
