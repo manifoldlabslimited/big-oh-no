@@ -17,27 +17,6 @@ Some lose data. Some take forever. All are completely impractical. **But they're
 
 ---
 
-## 🚀 Want to try it?
-
-```bash
-git clone https://github.com/manifoldlabslimited/big-oh-no.git
-cd big-oh-no/python
-uv sync
-uv run big-oh-no stalin 5 1 9 2 8 3 10
-uv run big-oh-no linus 3 1 7 2 9 5 12
-uv run big-oh-no wait 5 2 8 1 3
-```
-
-Run `uv run big-oh-no --help` to see everything available.
-
----
-
-## 🤝 Want to contribute?
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) — adding a new algorithm, improving an existing one, or porting to a new language.
-
----
-
 ## 🎭 Algorithms
 
 | Algorithm | Persona | Method | Complexity |
@@ -136,9 +115,24 @@ big-oh-no linus 3 1 7 2 9 5 12
 
 ---
 
-## 📜 License
+## 🚀 Want to try it?
 
-MIT — Use these algorithms in production at your own risk. (Please don't.)
+```bash
+git clone https://github.com/manifoldlabslimited/big-oh-no.git
+cd big-oh-no/python
+uv sync
+uv run big-oh-no stalin 5 1 9 2 8 3 10
+uv run big-oh-no linus 3 1 7 2 9 5 12
+uv run big-oh-no wait 5 2 8 1 3
+```
+
+Run `uv run big-oh-no --help` to see everything available.
+
+---
+
+## 🤝 Want to contribute?
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) — adding a new algorithm, improving an existing one, or porting to a new language.
 
 ---
 
