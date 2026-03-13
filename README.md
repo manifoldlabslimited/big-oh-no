@@ -20,17 +20,9 @@ Some lose data. Some take forever. All are completely impractical. **But they're
 ## 🚀 Want to try it?
 
 ```bash
-# 1. Clone the repo
 git clone https://github.com/manifoldlabslimited/big-oh-no.git
-cd big-oh-no
-
-# 2. Go to the Python implementation
-cd python
-
-# 3. Install dependencies
+cd big-oh-no/python
 uv sync
-
-# 4. Run an algorithm
 uv run big-oh-no stalin 5 1 9 2 8 3 10
 uv run big-oh-no linus 3 1 7 2 9 5 12
 uv run big-oh-no wait 5 2 8 1 3
@@ -46,13 +38,13 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) — adding a new algorithm, improving an 
 
 ---
 
-## 🎭 Available Algorithms
+## 🎭 Algorithms
 
-| Algorithm | Persona | Method | Complexity | Output |
-|-----------|---------|--------|------------|--------|
-| **Wait Sort** | ⏳ The Patient One | Each number waits (value) seconds | O(max(n)) time | Sorted ✓ |
-| **Stalin Sort** | ☭ The Authoritarian | Eliminates out-of-order elements | O(n) time, O(n) casualties | "Sorted" ✓ |
-| **Linus Sort** | 🐧 The Code Reviewer | NAKs patches that break monotonic order | O(n) time, O(n) hurt feelings | "Merged" ✓ |
+| Algorithm | Persona | Method | Complexity |
+|-----------|---------|--------|------------|
+| **Wait Sort** | ⏳ The Patient One | Each number waits (value) seconds in a thread | O(max(n)) time |
+| **Stalin Sort** | ☭ The Authoritarian | Eliminates any element smaller than the current max | O(n) time, O(n) casualties |
+| **Linus Sort** | 🐧 The Code Reviewer | NAKs patches that break monotonic order | O(n) time, O(n) hurt feelings |
 
 ---
 
@@ -134,94 +126,6 @@ big-oh-no linus 3 1 7 2 9 5 12
 
 ---
 
-## 📦 Installation
-
-### Python
-
-```bash
-cd python
-uv sync
-
-# Run directly
-uv run big-oh-no
-
-# Or with specific algorithm
-uv run big-oh-no stalin 5 1 9 2 8
-```
-
-### Rust
-
-🦀 *Coming soon...*
-
----
-
-## 🚀 Usage
-
-```bash
-# Show available algorithms
-big-oh-no
-
-# Run a specific algorithm
-big-oh-no <algorithm> [numbers...]
-
-# Get help
-big-oh-no --help
-big-oh-no <algorithm> --help
-```
-
-### Examples
-
-```bash
-# Wait Sort with default 1s per unit
-big-oh-no wait 10 5 3 7
-
-# Stalin Sort
-big-oh-no stalin 5 1 9 2 8 3 10
-
-# Linus Sort
-big-oh-no linus 3 1 7 2 9 5 12
-```
-
-### Validation
-
-- Input validation uses Pydantic v2 at the CLI boundary.
-- `numbers` must be a non-empty list of integers.
-
----
-
-## 🧪 Testing
-
-```bash
-cd python
-uv run --extra dev pytest -q
-```
-
----
-
-## 🗂️ Project Structure
-
-```
-big-oh-no/
-├── README.md           # You are here
-├── CONTRIBUTING.md     # Contribution guidelines
-├── LICENSE             # MIT
-├── python/             # Python implementation
-│   ├── pyproject.toml  # Project config
-│   ├── cli.py          # Click CLI entrypoint
-│   ├── utils.py        # Shared console, Pydantic models
-│   ├── wait_sort.py
-│   ├── stalin_sort.py
-│   ├── linus_sort.py
-│   └── tests/
-│       ├── test_validation.py  # Pydantic boundary tests
-│       ├── test_algorithms.py  # Sort function unit tests
-│       └── test_cli.py         # E2E CLI tests (CliRunner)
-└── rust/               # Rust implementation (coming soon)
-    └── src/
-```
-
----
-
 ## 📊 Implementation Status
 
 | Algorithm | Python | Rust |
@@ -229,8 +133,6 @@ big-oh-no/
 | Wait Sort | ✅ | 🚧 |
 | Stalin Sort | ✅ | 🚧 |
 | Linus Sort | ✅ | 🚧 |
-
----
 
 ---
 
@@ -246,7 +148,6 @@ MIT — Use these algorithms in production at your own risk. (Please don't.)
 - **Stalin Sort** — Inspired by the infamous "Stalin Sort" meme
 - **Linus Sort** — Inspired by Linus Torvalds' legendary code review style on LKML
 
----
 
 <p align="center">
   <i>Remember: Just because you can sort this way doesn't mean you should.</i>
