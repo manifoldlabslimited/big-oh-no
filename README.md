@@ -25,6 +25,7 @@ Some lose data. Some take forever. All are completely impractical. **But they're
 | **Stalin Sort** | ☭ The Authoritarian | Eliminates any element smaller than the current max | O(n) time, O(n) casualties |
 | **Linus Sort** | 🐧 The Code Reviewer | NAKs patches that break monotonic order | O(n) time, O(n) hurt feelings |
 | **Bogo Sort** | 🎲 The Gambler | Randomly shuffles until sorted | O((n+1)!) expected time |
+| **Schrödinger Sort** | 🐱 The Quantum Observer | Collapses to least convenient state on observation | O(1) collapse · O(∞) regret |
 
 ---
 
@@ -136,6 +137,38 @@ big-oh-no bogo --max-attempts 5000 3 2 1
 
 ---
 
+## 🐱 Schrödinger Sort
+
+*"You shouldn't have looked."*
+
+The list exists in a quantum superposition of sorted and unsorted states. Both eigenstates are displayed before observation. The moment you observe it, the wavefunction collapses — into whichever state is least convenient. If your input is already sorted, collapse to unsorted is **guaranteed**. Otherwise, it's a 50/50 coin flip the universe never lets you win.
+
+Unlike Stalin Sort or Linus Sort, **no elements are ever dropped** — all numbers survive, they just may end up in a deeply unhelpful order.
+
+**How it works:**
+1. The list enters **quantum superposition** — simultaneously sorted and unsorted
+2. Both eigenstates are displayed before observation (enjoy it while it lasts)
+3. You observe it — triggering **wavefunction collapse** (your fault, not ours)
+4. It collapses to whichever state is **least convenient** 💥
+5. If it was already sorted: collapse to unsorted is **guaranteed**
+6. Result: a list of all your original numbers, in an order that spite chose
+
+**Complexity:**
+- Collapse: O(1)
+- Computing sorted state: O(n log n)
+- Regret: O(∞)
+
+```bash
+# Input: [5, 3, 1, 4]
+# Output: sorted or shuffled — 50/50, whichever is worse
+big-oh-no schrodinger 5 3 1 4
+
+# Already sorted? Collapse to unsorted is guaranteed. The universe is watching.
+big-oh-no schrodinger 1 2 3
+```
+
+---
+
 ## 📊 Implementation Status
 
 | Algorithm | Python | Rust |
@@ -144,6 +177,7 @@ big-oh-no bogo --max-attempts 5000 3 2 1
 | Stalin Sort | ✅ | 🚧 |
 | Linus Sort | ✅ | 🚧 |
 | Bogo Sort | ✅ | 🚧 |
+| Schrödinger Sort | ✅ | 🚧 |
 
 ---
 
@@ -172,6 +206,7 @@ uv run big-oh-no linus 3 1 7 2 9 5 12
 uv run big-oh-no wait 5 2 8 1 3
 uv run big-oh-no bogo 3 2 1
 uv run big-oh-no bogo --max-attempts 5000 3 2 1
+uv run big-oh-no schrodinger 5 3 1 4
 ```
 
 ---
@@ -187,6 +222,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) — adding a new algorithm, improving an 
 - **Wait Sort** — Inspired by the concept of Sleep Sort
 - **Stalin Sort** — Inspired by the infamous "Stalin Sort" meme
 - **Linus Sort** — Inspired by Linus Torvalds' legendary code review style on LKML
+- **Bogo Sort** — Inspired by the classic bogosort thought experiment
+- **Schrödinger Sort** — Inspired by the Schrödinger's cat thought experiment
 
 
 <p align="center">

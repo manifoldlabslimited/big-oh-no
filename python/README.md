@@ -23,6 +23,7 @@ uv run big-oh-no stalin 5 1 9 2 8 3 10
 uv run big-oh-no linus 3 1 7 2 9 5 12
 uv run big-oh-no bogo 3 2 1
 uv run big-oh-no bogo --max-attempts 5000 3 2 1
+uv run big-oh-no schrodinger 5 3 1 4
 ```
 
 If you see a `VIRTUAL_ENV ... does not match the project environment path` warning, another virtualenv is active in your shell. It is safe to ignore, or run `deactivate` before `uv` commands.
@@ -53,6 +54,7 @@ Three test modules:
 - Add a command in `big_oh_no/cli.py` using Click, following the pattern of the existing commands
 - Add at least one test in `tests/test_algorithms.py`
 - Update the algorithm list in the root `README.md`
+- Add a run example in `python/README.md`
 
 ### Making an existing one better
 
