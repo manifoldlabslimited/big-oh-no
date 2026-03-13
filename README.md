@@ -11,7 +11,7 @@
     ╚═════╝ ╚═╝ ╚═════╝      ╚═════╝ ╚═╝  ╚═╝ ╚═╝ ╚═════╝ ╚═╝
 ```
 
-**Big O(No)** is a lovingly curated collection of sorting algorithms that should never, ever be used in production. Each algorithm comes with its own unique persona and distinctive approach to achieving "sorted" results.
+**Big O(No)** is a lovingly curated collection of sorting algorithms that should never, ever be used. Each algorithm comes with its own unique persona and distinctive approach to achieving "sorted" results.
 
 Some lose data. Some take forever. All are completely impractical. **But they're fun.**
 
@@ -138,9 +138,6 @@ big-oh-no
 # Run a specific algorithm
 big-oh-no <algorithm> [numbers...]
 
-# Interactive mode
-big-oh-no <algorithm> -i
-
 # Get help
 big-oh-no --help
 big-oh-no <algorithm> --help
@@ -152,11 +149,26 @@ big-oh-no <algorithm> --help
 # Wait Sort with custom scale
 big-oh-no wait 10 5 3 7 --scale 0.5
 
-# Stalin Sort (no animation for speed)
-big-oh-no stalin 5 1 9 2 8 3 10 --no-animate
+# Stalin Sort
+big-oh-no stalin 5 1 9 2 8 3 10
 
-# Linus Sort in interactive mode
-big-oh-no linus -i
+# Linus Sort
+big-oh-no linus 3 1 7 2 9 5 12
+```
+
+### Validation
+
+- Input validation uses Pydantic v2 at the CLI boundary.
+- `numbers` must be a non-empty list of integers.
+- For Wait Sort, `scale` must be a positive number.
+
+---
+
+## 🧪 Testing
+
+```bash
+cd python
+uv run --extra dev pytest -q
 ```
 
 ---
@@ -190,15 +202,7 @@ big-oh-no/
 
 ## 🤝 Contributing
 
-Found another hilariously impractical sorting algorithm? PRs welcome!
-
-Guidelines:
-- Algorithm must be technically "correct" (output is sorted*)
-- Must have a distinct persona/theme
-- Beautiful CLI output is mandatory
-- Practical efficiency is **explicitly discouraged**
-
-*\*"Sorted" may include data loss, infinite runtime, or existential dread*
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
 
 ---
 

@@ -5,50 +5,19 @@ Any element out of order is simply... removed.
 The survivors form a perfectly sorted list.
 """
 
-import sys
-import random
 import time
 
-from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
-from rich.prompt import Prompt, IntPrompt, Confirm
-from rich.text import Text
 from rich.align import Align
 from rich import box
 from rich.rule import Rule
-from rich.live import Live
-from rich.columns import Columns
 
-console = Console()
-
-eliminated = []
-survivors = []
+from utils import console, make_sort_header
 
 
 def create_header():
-    """Create a dramatic header panel."""
-    title = Text()
-    title.append("☭ ", style="red")
-    title.append("S T A L I N", style="bold red")
-    title.append("   ", style="")
-    title.append("S O R T", style="bold yellow")
-    title.append(" ☭", style="red")
-    
-    subtitle = Text("In Soviet Russia, list sorts YOU", style="dim italic")
-    
-    return Panel(
-        Align.center(
-            Text.assemble(
-                title,
-                "\n",
-                subtitle,
-            )
-        ),
-        box=box.DOUBLE_EDGE,
-        style="bold red",
-        padding=(1, 2),
-    )
+    return make_sort_header("☭", "stalin", "In Soviet Russia, list sorts YOU", "red")
 
 
 def create_stats_table(numbers):
@@ -72,14 +41,10 @@ def create_stats_table(numbers):
     return table
 
 
-def stalin_sort(numbers, animate=True):
+def stalin_sort(numbers):
     """Sort by eliminating any element that is out of order."""
-    global eliminated, survivors
     eliminated = []
     survivors = []
-    
-    if not numbers:
-        return []
     
     console.print()
     console.print(create_header())
@@ -96,17 +61,14 @@ def stalin_sort(numbers, animate=True):
     current_max = numbers[0]
     survivors.append(numbers[0])
     
-    if animate:
-        time.sleep(0.5)
+    time.sleep(0.5)
     
     console.print(f"[green]✓[/green] [bold cyan]{numbers[0]}[/bold cyan] takes the lead. [dim]Welcome, comrade.[/dim]")
     
-    if animate:
-        time.sleep(0.3)
+    time.sleep(0.3)
     
-    for i, num in enumerate(numbers[1:], start=1):
-        if animate:
-            time.sleep(0.4)
+    for num in numbers[1:]:
+        time.sleep(0.4)
         
         if num >= current_max:
             survivors.append(num)
@@ -119,7 +81,7 @@ def stalin_sort(numbers, animate=True):
     console.print()
     console.print(Rule("[bold green]✨ Purge Complete ✨[/bold green]", style="green"))
     
-    return survivors
+    return survivors, eliminated
 
 
 def create_result_table(original, survivors, eliminated):
@@ -213,127 +175,3 @@ def create_comparison_visual(original, survivors, eliminated):
             bar_len = int(num * bar_scale)
             bar = "░" * bar_len
             console.print(f"  [dim strikethrough]{num:3d}[/dim strikethrough] │[dim]{bar}[/dim]")
-
-
-def get_numbers_interactively():
-    """Get numbers from user interactively."""
-    console.print()
-    console.print(Panel(
-        "[bold]How would you like to provide numbers?[/bold]\n\n"
-        "[cyan]1.[/cyan] Enter numbers manually\n"
-        "[cyan]2.[/cyan] Generate random numbers\n"
-        "[cyan]3.[/cyan] Use example set (high casualties)",
-        title="[bold yellow]🔢 Input Method[/bold yellow]",
-        box=box.ROUNDED,
-    ))
-    
-    choice = Prompt.ask(
-        "\n[bold cyan]Choose option[/bold cyan]",
-        choices=["1", "2", "3"],
-        default="1",
-    )
-    
-    if choice == "1":
-        console.print("\n[dim]Enter numbers separated by spaces or commas[/dim]")
-        while True:
-            try:
-                input_str = Prompt.ask("[bold cyan]Numbers[/bold cyan]")
-                input_str = input_str.replace(",", " ")
-                numbers = [int(x.strip()) for x in input_str.split() if x.strip()]
-                if not numbers:
-                    console.print("[red]Please enter at least one number![/red]")
-                    continue
-                return numbers
-            except ValueError:
-                console.print("[red]Invalid input! Please enter numbers only.[/red]")
-    
-    elif choice == "2":
-        count = IntPrompt.ask("[bold cyan]How many numbers?[/bold cyan]", default=10)
-        max_val = IntPrompt.ask("[bold cyan]Maximum value?[/bold cyan]", default=20)
-        numbers = [random.randint(1, max_val) for _ in range(count)]
-        console.print(f"\n[dim]Generated:[/dim] [bold cyan]{numbers}[/bold cyan]")
-        return numbers
-    
-    else:
-        # Example with intentionally many out-of-order elements
-        return [5, 1, 9, 2, 8, 3, 10, 4, 7, 6]
-
-
-def main():
-    """Main entry point for stalin sort."""
-    console.print()
-    console.print(create_header())
-    
-    # Algorithm explanation
-    console.print(Panel(
-        "[bold]How Stalin Sort Works:[/bold]\n\n"
-        "• Iterate through the list from left to right\n"
-        "• Keep track of the current maximum value\n"
-        "• If an element is [green]>= current max[/green], it [green]survives[/green]\n"
-        "• If an element is [red]< current max[/red], it is [red]eliminated[/red]\n"
-        "• Result: A sorted list (of survivors)\n\n"
-        "[dim]Complexity: O(n) time · O(1) space · O(n) casualties[/dim]",
-        title="[bold cyan]💡 Algorithm Explanation[/bold cyan]",
-        box=box.ROUNDED,
-        padding=(1, 2),
-    ))
-    
-    # Check for command line arguments
-    if len(sys.argv) > 1:
-        try:
-            numbers = [int(x) for x in sys.argv[1:]]
-            console.print(f"\n[dim]Using command line arguments:[/dim] [bold cyan]{numbers}[/bold cyan]")
-        except ValueError:
-            console.print("[red]Error: Please provide valid integers as arguments[/red]")
-            sys.exit(1)
-    else:
-        # Interactive mode
-        numbers = get_numbers_interactively()
-    
-    # Store original for comparison
-    original = numbers.copy()
-    
-    # Run the sort
-    sorted_nums = stalin_sort(numbers)
-    
-    # Show results
-    console.print()
-    console.print(Align.center(create_result_table(original, survivors, eliminated)))
-    console.print()
-    
-    create_comparison_visual(original, survivors, eliminated)
-    
-    # Final summary
-    survival_rate = (len(survivors) / len(original)) * 100
-    
-    if survival_rate == 100:
-        verdict = "🎖️  Perfect! The list was already in order. No purge needed."
-        style = "green"
-    elif survival_rate >= 70:
-        verdict = "📈 Acceptable losses. The party is pleased."
-        style = "yellow"
-    elif survival_rate >= 40:
-        verdict = "⚠️  Significant casualties. But order has been achieved."
-        style = "yellow"
-    else:
-        verdict = "💀 Brutal. But necessary."
-        style = "red"
-    
-    console.print()
-    console.print(Panel(
-        f"[bold {style}]{verdict}[/bold {style}]\n\n"
-        f"[dim]Original:[/dim]  {original}\n"
-        f"[dim]Sorted:[/dim]    [bold cyan]{survivors}[/bold cyan]\n"
-        f"[dim]Eliminated:[/dim] [red]{eliminated}[/red]",
-        title="[bold yellow]☭ Final Verdict ☭[/bold yellow]",
-        box=box.DOUBLE,
-        style=style,
-    ))
-    
-    console.print()
-    console.print("[dim]Usage: python stalin_sort.py [num1 num2 ...] or run interactively[/dim]")
-    console.print()
-
-
-if __name__ == "__main__":
-    main()

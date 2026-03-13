@@ -5,12 +5,15 @@ description = "A collection of utterly useless yet entertaining sorting algorith
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "click>=8.3.1",
-    "rich>=14.3.3",
+    "click>=8.0",
+    "pydantic>=2.0",
+    "rich>=13.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
 ]
 
 [project.scripts]
 big-oh-no = "cli:main"
-wait-sort = "wait_sort:main"
-stalin-sort = "stalin_sort:main"
-linus-sort = "linus_sort:main"
