@@ -1,7 +1,7 @@
 import click
 import pytest
 
-from cli import parse_numbers
+from big_oh_no.cli import parse_numbers
 
 
 def test_parse_numbers_valid():

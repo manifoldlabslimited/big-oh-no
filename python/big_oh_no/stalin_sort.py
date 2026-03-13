@@ -13,7 +13,7 @@ from rich.align import Align
 from rich import box
 from rich.rule import Rule
 
-from utils import console, make_sort_header
+from .utils import console, make_sort_header
 
 
 def create_header():

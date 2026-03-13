@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "big-oh-no"
 version = "0.1.0"
@@ -16,4 +20,7 @@ dev = [
 ]
 
 [project.scripts]
-big-oh-no = "cli:main"
+big-oh-no = "big_oh_no.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["big_oh_no*"]

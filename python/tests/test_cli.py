@@ -1,7 +1,7 @@
 import pytest
 from click.testing import CliRunner
 
-from cli import cli
+from big_oh_no.cli import cli
 
 
 @pytest.fixture

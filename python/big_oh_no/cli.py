@@ -9,7 +9,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich import box
 from rich.align import Align
-from utils import SortInput, ValidationError
+from .utils import SortInput, ValidationError
 
 console = Console()
 
@@ -124,7 +124,7 @@ def wait(numbers):
     Examples:
         big-oh-no wait 5 2 8 1 3
     """
-    import wait_sort as ws
+    from . import wait_sort as ws
 
     nums = parse_numbers(numbers)
 
@@ -176,7 +176,7 @@ def stalin(numbers):
     Examples:
         big-oh-no stalin 5 1 9 2 8 3 10
     """
-    import stalin_sort as ss
+    from . import stalin_sort as ss
 
     nums = parse_numbers(numbers)
 
@@ -248,7 +248,7 @@ def linus(numbers):
     Examples:
         big-oh-no linus 3 1 7 2 9 5 12
     """
-    import linus_sort as ls
+    from . import linus_sort as ls
 
     nums = parse_numbers(numbers)
 

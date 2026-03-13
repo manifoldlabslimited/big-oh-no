@@ -1,6 +1,6 @@
-import linus_sort
-import stalin_sort
-import wait_sort
+from big_oh_no import linus_sort
+from big_oh_no import stalin_sort
+from big_oh_no import wait_sort
 
 
 def test_stalin_sort_outputs_survivors_and_eliminated(monkeypatch):

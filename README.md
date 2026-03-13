@@ -117,16 +117,28 @@ big-oh-no linus 3 1 7 2 9 5 12
 
 ## 🚀 Want to try it?
 
+1. Clone the repo.
 ```bash
 git clone https://github.com/manifoldlabslimited/big-oh-no.git
+```
+
+2. Move into the Python folder.
+```bash
 cd big-oh-no/python
+```
+
+3. Install dependencies.
+```bash
 uv sync
+```
+
+4. Run the CLI.
+```bash
+uv run big-oh-no --help
 uv run big-oh-no stalin 5 1 9 2 8 3 10
 uv run big-oh-no linus 3 1 7 2 9 5 12
 uv run big-oh-no wait 5 2 8 1 3
 ```
-
-Run `uv run big-oh-no --help` to see everything available.
 
 ---
 
