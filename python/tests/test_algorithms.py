@@ -1,5 +1,6 @@
 from big_oh_no import bogo_sort
 from big_oh_no import linus_sort
+from big_oh_no import schrodinger_sort
 from big_oh_no import stalin_sort
 from big_oh_no import wait_sort
 
@@ -38,3 +39,26 @@ def test_bogo_sort_returns_sorted_list(monkeypatch):
 
     assert sorted_nums == [1, 2, 3]
     assert attempts == 1
+
+
+def test_schrodinger_sort_always_destroys_already_sorted_input(monkeypatch):
+    monkeypatch.setattr(schrodinger_sort.time, "sleep", lambda _: None)
+    monkeypatch.setattr(schrodinger_sort.random, "choice", lambda seq: seq[0])
+    monkeypatch.setattr(schrodinger_sort.random, "shuffle", lambda lst: lst.reverse())
+
+    result, collapsed_to_sorted, _ = schrodinger_sort.schrodinger_sort([1, 2, 3])
+
+    assert collapsed_to_sorted is False
+    assert result != [1, 2, 3]
+
+
+def test_schrodinger_sort_collapses_to_sorted_when_random_cooperates(monkeypatch):
+    monkeypatch.setattr(schrodinger_sort.time, "sleep", lambda _: None)
+    monkeypatch.setattr(schrodinger_sort.random, "choice", lambda seq: seq[0])
+    monkeypatch.setattr(schrodinger_sort.random, "shuffle", lambda lst: lst.reverse())
+    monkeypatch.setattr(schrodinger_sort.random, "random", lambda: 0.0)  # < 0.5 → sorted
+
+    result, collapsed_to_sorted, _ = schrodinger_sort.schrodinger_sort([3, 1, 2])
+
+    assert collapsed_to_sorted is True
+    assert result == [1, 2, 3]

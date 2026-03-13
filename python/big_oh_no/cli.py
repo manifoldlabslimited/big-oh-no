@@ -82,6 +82,12 @@ def show_algorithms_table():
         "Shuffle repeatedly until sorted",
         "O((n+1)!) expected time",
     )
+    table.add_row(
+        "schrodinger",
+        "🐱 The Quantum Observer",
+        "Collapses to least convenient state on observation",
+        "O(1) collapse · O(∞) regret",
+    )
     
     console.print(table)
 
@@ -101,6 +107,7 @@ def cli(ctx):
         big-oh-no stalin 5 1 9 2 8 3 10
         big-oh-no linus 3 1 7 2 9 5 12
         big-oh-no bogo 3 2 1
+        big-oh-no schrodinger 5 3 1 4
     """
     if ctx.invoked_subcommand is None:
         show_banner()
@@ -369,6 +376,53 @@ def bogo(max_attempts, numbers):
     bs.console.print()
     bs.console.print(bs.create_result_panel(original, sorted_candidate, attempts, elapsed))
     bs.console.print()
+
+
+@cli.command()
+@click.argument('numbers', nargs=-1, type=int, required=True)
+def schrodinger(numbers):
+    """
+    🐱 Schrödinger Sort - Sorted and unsorted, until you look.
+
+    The list exists in quantum superposition until observed. On observation
+    the wavefunction collapses into whichever state is least convenient.
+    Already-sorted input is guaranteed to be destroyed.
+
+    \b
+    Examples:
+        big-oh-no schrodinger 5 3 1 4
+        big-oh-no schrodinger 1 2 3
+    """
+    from . import schrodinger_sort as sch
+
+    nums = parse_numbers(numbers)
+    original = nums.copy()
+
+    sch.console.print()
+    sch.console.print(sch.create_header())
+
+    sch.console.print(Panel(
+        "[bold]How Schrödinger Sort Works:[/bold]\n\n"
+        "• The list enters [cyan]quantum superposition[/cyan] — simultaneously sorted and unsorted\n"
+        "• Both eigenstates are displayed before observation\n"
+        "• You [red]observe[/red] it, collapsing the wavefunction\n"
+        "• It collapses to whichever state is [bold red]least convenient[/bold red]\n"
+        "• Already-sorted input is [red]always[/red] destroyed\n\n"
+        "[dim]Complexity: O(1) collapse · O(n log n) to compute sorted state · O(∞) regret[/dim]",
+        title="[bold cyan]💡 Algorithm Explanation[/bold cyan]",
+        box=box.ROUNDED,
+        padding=(1, 2),
+    ))
+
+    sch.console.print(f"\n[dim]Numbers:[/dim] [bold cyan]{nums}[/bold cyan]")
+
+    result, collapsed_to_sorted, comment = sch.schrodinger_sort(nums)
+
+    sch.console.print()
+    sch.console.print(Align.center(sch.create_result_table(original, result, collapsed_to_sorted, comment)))
+    sch.console.print()
+    sch.console.print(sch.create_result_panel(original, result, collapsed_to_sorted, comment))
+    sch.console.print()
 
 
 def main():

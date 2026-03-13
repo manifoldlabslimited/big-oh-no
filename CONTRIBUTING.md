@@ -25,6 +25,7 @@ Each language lives in its own top-level folder (e.g. `python/`, `rust/`). To ad
 - Implement whichever algorithms you like — you don't need to port everything
 - Add a `<language>/README.md` with setup, run, and contribution instructions (see [python/README.md](python/README.md) as a reference)
 - Update the implementation status table in the root `README.md`
+- Add a run example in `python/README.md`
 
 ### Contribute to an existing language
 
