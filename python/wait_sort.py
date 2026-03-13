@@ -17,6 +17,8 @@ from rich.rule import Rule
 
 from utils import console, make_sort_header
 
+SCALE = 1.0
+
 result = []
 result_lock = threading.Lock()
 start_time = None
@@ -27,7 +29,7 @@ def create_header():
     return make_sort_header("⏳", "wait", "The most patient sorting algorithm ever invented", "cyan")
 
 
-def create_stats_table(numbers, scale):
+def create_stats_table(numbers):
     """Create a stats table for the input."""
     table = Table(
         title="📊 Sort Configuration",
@@ -42,17 +44,16 @@ def create_stats_table(numbers, scale):
     
     table.add_row("Numbers to sort", f"[bold]{numbers}[/bold]")
     table.add_row("Count", f"[cyan]{len(numbers)}[/cyan] numbers")
-    table.add_row("Scale factor", f"[yellow]{scale}s[/yellow] per unit")
     table.add_row("Min value", f"[green]{min(numbers)}[/green]")
     table.add_row("Max value", f"[red]{max(numbers)}[/red]")
-    table.add_row("Estimated time", f"[magenta]{max(numbers) * scale:.1f}s[/magenta]")
+    table.add_row("Estimated time", f"[magenta]{max(numbers) * SCALE:.1f}s[/magenta]")
     
     return table
 
 
-def wait_and_append_rich(index, num, scale, progress, task_ids):
+def wait_and_append_rich(index, num, progress, task_ids):
     """Wait proportionally to the number, then add to results."""
-    wait_time = num * scale
+    wait_time = num * SCALE
     task_id = task_ids[index]
     
     steps = max(int(wait_time * 20), 1)
@@ -66,7 +67,7 @@ def wait_and_append_rich(index, num, scale, progress, task_ids):
         progress.update(task_id, completed=steps, description=f"[green]✓[/green] [bold]{num}[/bold]")
 
 
-def wait_sort(numbers, scale=1.0):
+def wait_sort(numbers):
     """Sort numbers by making each wait proportionally to its value."""
     global result, start_time, completions
     result = []
@@ -77,7 +78,7 @@ def wait_sort(numbers, scale=1.0):
     console.print()
     console.print(create_header())
     console.print()
-    console.print(Align.center(create_stats_table(numbers, scale)))
+    console.print(Align.center(create_stats_table(numbers)))
     console.print()
     
     console.print(Rule("[bold cyan]🚀 Starting Sort[/bold cyan]", style="cyan"))
@@ -99,7 +100,7 @@ def wait_sort(numbers, scale=1.0):
         # Create tasks for each number
         task_ids = {}
         for idx, num in sorted(indexed_numbers, key=lambda item: item[1], reverse=True):
-            steps = max(int(num * scale * 20), 1)
+            steps = max(int(num * SCALE * 20), 1)
             task_id = progress.add_task(
                 f"[yellow]⏳[/yellow] [bold cyan]{num:3d}[/bold cyan]",
                 total=steps,
@@ -109,7 +110,7 @@ def wait_sort(numbers, scale=1.0):
         # Create threads
         threads = []
         for idx, num in indexed_numbers:
-            t = threading.Thread(target=wait_and_append_rich, args=(idx, num, scale, progress, task_ids))
+            t = threading.Thread(target=wait_and_append_rich, args=(idx, num, progress, task_ids))
             threads.append(t)
         
         # Start all threads

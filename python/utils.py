@@ -38,8 +38,4 @@ class SortInput(BaseModel):
     numbers: list[Annotated[int, Field(strict=True)]] = Field(min_length=1)
 
 
-class WaitSortInput(SortInput):
-    scale: Annotated[float, Field(strict=True, gt=0)] = 1.0
-
-
-__all__ = ["console", "make_sort_header", "SortInput", "WaitSortInput", "ValidationError"]
+__all__ = ["console", "make_sort_header", "SortInput", "ValidationError"]

@@ -17,11 +17,40 @@ Some lose data. Some take forever. All are completely impractical. **But they're
 
 ---
 
+## 🚀 Want to try it?
+
+```bash
+# 1. Clone the repo
+git clone https://github.com/manifoldlabslimited/big-oh-no.git
+cd big-oh-no
+
+# 2. Go to the Python implementation
+cd python
+
+# 3. Install dependencies
+uv sync
+
+# 4. Run an algorithm
+uv run big-oh-no stalin 5 1 9 2 8 3 10
+uv run big-oh-no linus 3 1 7 2 9 5 12
+uv run big-oh-no wait 5 2 8 1 3
+```
+
+Run `uv run big-oh-no --help` to see everything available.
+
+---
+
+## 🤝 Want to contribute?
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) — adding a new algorithm, improving an existing one, or porting to a new language.
+
+---
+
 ## 🎭 Available Algorithms
 
 | Algorithm | Persona | Method | Complexity | Output |
 |-----------|---------|--------|------------|--------|
-| **Wait Sort** | ⏳ The Patient One | Each number waits (value × scale) seconds | O(max(n)) time | Sorted ✓ |
+| **Wait Sort** | ⏳ The Patient One | Each number waits (value) seconds | O(max(n)) time | Sorted ✓ |
 | **Stalin Sort** | ☭ The Authoritarian | Eliminates out-of-order elements | O(n) time, O(n) casualties | "Sorted" ✓ |
 | **Linus Sort** | 🐧 The Code Reviewer | NAKs patches that break monotonic order | O(n) time, O(n) hurt feelings | "Merged" ✓ |
 
@@ -35,7 +64,7 @@ The most patient sorting algorithm ever conceived. Each number spawns a thread t
 
 **How it works:**
 1. Spawn a thread for each number
-2. Each thread sleeps for `number × scale` seconds
+2. Each thread sleeps for `value` seconds
 3. When a thread wakes, it adds its number to the result
 4. Smaller numbers finish first → **Sorted!**
 
@@ -47,9 +76,6 @@ The most patient sorting algorithm ever conceived. Each number spawns a thread t
 ```bash
 # Sort [5, 2, 8, 1, 3] - takes ~8 seconds
 big-oh-no wait 5 2 8 1 3
-
-# Speed it up with a scale factor
-big-oh-no wait 5 2 8 1 3 --scale 0.5
 ```
 
 ---
@@ -146,8 +172,8 @@ big-oh-no <algorithm> --help
 ### Examples
 
 ```bash
-# Wait Sort with custom scale
-big-oh-no wait 10 5 3 7 --scale 0.5
+# Wait Sort with default 1s per unit
+big-oh-no wait 10 5 3 7
 
 # Stalin Sort
 big-oh-no stalin 5 1 9 2 8 3 10
@@ -160,7 +186,6 @@ big-oh-no linus 3 1 7 2 9 5 12
 
 - Input validation uses Pydantic v2 at the CLI boundary.
 - `numbers` must be a non-empty list of integers.
-- For Wait Sort, `scale` must be a positive number.
 
 ---
 
@@ -178,12 +203,19 @@ uv run --extra dev pytest -q
 ```
 big-oh-no/
 ├── README.md           # You are here
+├── CONTRIBUTING.md     # Contribution guidelines
+├── LICENSE             # MIT
 ├── python/             # Python implementation
 │   ├── pyproject.toml  # Project config
-│   ├── cli.py          # Click CLI
-│   ├── wait_sort.py    # Wait Sort implementation
-│   ├── stalin_sort.py  # Stalin Sort implementation
-│   └── linus_sort.py   # Linus Sort implementation
+│   ├── cli.py          # Click CLI entrypoint
+│   ├── utils.py        # Shared console, Pydantic models
+│   ├── wait_sort.py
+│   ├── stalin_sort.py
+│   ├── linus_sort.py
+│   └── tests/
+│       ├── test_validation.py  # Pydantic boundary tests
+│       ├── test_algorithms.py  # Sort function unit tests
+│       └── test_cli.py         # E2E CLI tests (CliRunner)
 └── rust/               # Rust implementation (coming soon)
     └── src/
 ```
@@ -199,10 +231,6 @@ big-oh-no/
 | Linus Sort | ✅ | 🚧 |
 
 ---
-
-## 🤝 Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
 
 ---
 

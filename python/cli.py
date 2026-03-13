@@ -9,7 +9,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich import box
 from rich.align import Align
-from utils import SortInput, WaitSortInput, ValidationError
+from utils import SortInput, ValidationError
 
 console = Console()
 
@@ -23,18 +23,6 @@ def parse_numbers(numbers):
         location = ".".join(str(part) for part in first_error.get("loc", []))
         message = first_error.get("msg", "Invalid value")
         raise click.BadParameter(f"{location}: {message}", param_hint="numbers")
-
-
-def parse_wait_input(numbers, scale):
-    """Validate and normalize wait-sort inputs with Pydantic."""
-    try:
-        parsed = WaitSortInput(numbers=list(numbers), scale=scale)
-        return parsed.numbers, parsed.scale
-    except ValidationError as e:
-        first_error = e.errors()[0]
-        location = ".".join(str(part) for part in first_error.get("loc", []))
-        message = first_error.get("msg", "Invalid value")
-        raise click.BadParameter(f"{location}: {message}", param_hint=location)
 
 
 def show_banner():
@@ -125,29 +113,27 @@ def list_algorithms():
 
 @cli.command()
 @click.argument('numbers', nargs=-1, type=int, required=True)
-@click.option('--scale', '-s', default=1.0, type=float, help='Scale factor for wait time (default: 1.0)')
-def wait(numbers, scale):
+def wait(numbers):
     """
     ⏳ Wait Sort - The most patient sorting algorithm.
     
-    Each number spawns a thread that waits for (value × scale) seconds.
+    Each number spawns a thread that waits for (value × 1) seconds.
     Smaller numbers finish first, resulting in a sorted output.
     
     \b
     Examples:
         big-oh-no wait 5 2 8 1 3
-        big-oh-no wait 10 5 3 --scale 0.5
     """
     import wait_sort as ws
 
-    nums, scale = parse_wait_input(numbers, scale)
+    nums = parse_numbers(numbers)
 
     ws.console.print()
     ws.console.print(ws.create_header())
     
     ws.console.print(Panel(
         "[bold]How Wait Sort Works:[/bold]\n\n"
-        "• Each number spawns a thread that [cyan]waits[/cyan] for (number × scale) seconds\n"
+        "• Each number spawns a thread that [cyan]waits[/cyan] for (value) seconds\n"
         "• Smaller numbers finish waiting [green]first[/green]\n"
         "• Numbers are collected in the order they finish\n"
         "• Result: [bold green]Naturally sorted![/bold green]\n\n"
@@ -158,9 +144,8 @@ def wait(numbers, scale):
     ))
     
     ws.console.print(f"\n[dim]Numbers:[/dim] [bold cyan]{nums}[/bold cyan]")
-    ws.console.print(f"[dim]Scale:[/dim] [bold yellow]{scale}s[/bold yellow] per unit")
     
-    sorted_nums, total_time = ws.wait_sort(nums, scale)
+    sorted_nums, total_time = ws.wait_sort(nums)
     
     ws.console.print(Align.center(ws.create_result_table(nums, sorted_nums, ws.completions)))
     ws.console.print()
