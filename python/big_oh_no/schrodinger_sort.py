@@ -38,7 +38,7 @@ def create_header():
     return make_sort_header("🐱", "schrodinger", "Sorted and unsorted, until you look", "blue")
 
 
-def create_stats_table(numbers):
+def create_stats_table(numbers, meanness):
     table = Table(
         title="⚛️  Quantum Input Analysis",
         box=box.ROUNDED,
@@ -51,6 +51,7 @@ def create_stats_table(numbers):
 
     table.add_row("Numbers to sort", f"[bold]{numbers}[/bold]")
     table.add_row("Count", f"[cyan]{len(numbers)}[/cyan] elements")
+    table.add_row("Meanness", f"[magenta]{meanness:.2f}[/magenta]")
     table.add_row("Current state", "[yellow]⚛️  superposition[/yellow]")
     table.add_row("Observer", "[red]YOU (dangerous)[/red]")
 
@@ -92,15 +93,36 @@ def is_sorted(values):
     return all(values[i] <= values[i + 1] for i in range(len(values) - 1))
 
 
-def schrodinger_sort(numbers, _collapse=None):
+def order_score(values):
+    """Count adjacent pairs that are already in non-decreasing order."""
+    return sum(1 for i in range(len(values) - 1) if values[i] <= values[i + 1])
+
+
+def collapse_probability(values, meanness):
+    """Return probability of collapsing into sorted state."""
+    hostility = meanness
+
+    # More meanness lowers p(sorted). Higher order ratio lowers it further.
+    max_pairs = max(len(values) - 1, 1)
+    order_ratio = order_score(values) / max_pairs
+    p_sorted = (1.0 - hostility) - (0.4 * order_ratio) + 0.2
+    return max(0.05, min(0.95, p_sorted))
+
+
+def schrodinger_sort(numbers, meanness=0.5, _collapse=None):
     """
     Observe the list, collapsing it into its least convenient state.
 
     _collapse: optional bool to force the outcome (for testing).
                True → sorted, False → unsorted.
 
+    meanness: 0.0-1.0 dial. Higher means less chance of sorted collapse.
+
     Returns (result, collapsed_to_sorted, comment)
     """
+    if not 0.0 <= meanness <= 1.0:
+        raise ValueError("meanness must be between 0.0 and 1.0")
+
     candidate = numbers.copy()
     sorted_state = sorted(candidate)
     unsorted_state = candidate.copy()
@@ -111,7 +133,7 @@ def schrodinger_sort(numbers, _collapse=None):
     console.print()
     console.print(create_header())
     console.print()
-    console.print(Align.center(create_stats_table(candidate)))
+    console.print(Align.center(create_stats_table(candidate, meanness)))
     console.print()
     console.print(Align.center(create_superposition_table(sorted_state, unsorted_state)))
     console.print()
@@ -126,6 +148,13 @@ def schrodinger_sort(numbers, _collapse=None):
     else:
         console.print("[dim]  Warning: observing this list will collapse its quantum state.[/dim]")
     console.print("[dim]  The universe will select the least convenient outcome.[/dim]")
+    console.print()
+
+    p_sorted = collapse_probability(candidate, meanness)
+    console.print(
+        f"[dim]  Meanness dial: {meanness:.2f} → estimated p(sorted) ≈ {p_sorted:.2f}[/dim]"
+    )
+
     console.print()
 
     steps = [
@@ -149,7 +178,7 @@ def schrodinger_sort(numbers, _collapse=None):
         # Already sorted → the universe gleefully destroys it
         collapsed_to_sorted = False
     else:
-        collapsed_to_sorted = random.random() < 0.5
+        collapsed_to_sorted = random.random() < p_sorted
 
     result = sorted_state if collapsed_to_sorted else unsorted_state
     comment = random.choice(
@@ -174,7 +203,7 @@ def schrodinger_sort(numbers, _collapse=None):
     return result, collapsed_to_sorted, comment
 
 
-def create_result_table(original, result, collapsed_to_sorted, comment):
+def create_result_table(original, result, collapsed_to_sorted, comment, meanness, estimated_p_sorted):
     table = Table(
         title="📊 Collapse Report",
         box=box.ROUNDED,
@@ -190,6 +219,8 @@ def create_result_table(original, result, collapsed_to_sorted, comment):
 
     table.add_row("Original", f"{original}")
     table.add_row("Result", f"[bold]{result}[/bold]")
+    table.add_row("Meanness", f"[magenta]{meanness:.2f}[/magenta]")
+    table.add_row("Est. p(sorted)", f"[cyan]{estimated_p_sorted:.2f}[/cyan]")
     table.add_row("Collapsed to", f"[{col}]{label}[/{col}]")
     table.add_row("Universe's verdict", f"[dim italic]{comment}[/dim italic]")
 

@@ -379,8 +379,15 @@ def bogo(max_attempts, numbers):
 
 
 @cli.command()
+@click.option(
+    "--meanness",
+    default=0.5,
+    show_default=True,
+    type=click.FloatRange(min=0.0, max=1.0),
+    help="How likely the universe is to choose an inconvenient collapse (0.0=kind, 1.0=spiteful).",
+)
 @click.argument('numbers', nargs=-1, type=int, required=True)
-def schrodinger(numbers):
+def schrodinger(meanness, numbers):
     """
     🐱 Schrödinger Sort - Sorted and unsorted, until you look.
 
@@ -391,6 +398,7 @@ def schrodinger(numbers):
     \b
     Examples:
         big-oh-no schrodinger 5 3 1 4
+        big-oh-no schrodinger --meanness 0.8 5 3 1 4
         big-oh-no schrodinger 1 2 3
     """
     from . import schrodinger_sort as sch
@@ -408,18 +416,34 @@ def schrodinger(numbers):
         "• You [red]observe[/red] it, collapsing the wavefunction\n"
         "• It collapses to whichever state is [bold red]least convenient[/bold red]\n"
         "• Already-sorted input is [red]always[/red] destroyed\n\n"
+        "[dim]Use --meanness 0.0-1.0 to bias collapse probability[/dim]\n"
+        "[dim]The meaner the universe, the less likely you are to observe the sorted branch.[/dim]\n"
+        "[dim]0.0 = kind universe · 0.5 = coin-flip energy · 1.0 = pure spite[/dim]\n\n"
         "[dim]Complexity: O(1) collapse · O(n log n) to compute sorted state · O(∞) regret[/dim]",
         title="[bold cyan]💡 Algorithm Explanation[/bold cyan]",
         box=box.ROUNDED,
         padding=(1, 2),
     ))
 
-    sch.console.print(f"\n[dim]Numbers:[/dim] [bold cyan]{nums}[/bold cyan]")
+    sch.console.print(
+        f"\n[dim]Numbers:[/dim] [bold cyan]{nums}[/bold cyan]\n"
+        f"[dim]Meanness:[/dim] [bold magenta]{meanness:.2f}[/bold magenta]"
+    )
 
-    result, collapsed_to_sorted, comment = sch.schrodinger_sort(nums)
+    result, collapsed_to_sorted, comment = sch.schrodinger_sort(nums, meanness=meanness)
+    estimated_p_sorted = sch.collapse_probability(nums, meanness)
 
     sch.console.print()
-    sch.console.print(Align.center(sch.create_result_table(original, result, collapsed_to_sorted, comment)))
+    sch.console.print(Align.center(
+        sch.create_result_table(
+            original,
+            result,
+            collapsed_to_sorted,
+            comment,
+            meanness,
+            estimated_p_sorted,
+        )
+    ))
     sch.console.print()
     sch.console.print(sch.create_result_panel(original, result, collapsed_to_sorted, comment))
     sch.console.print()

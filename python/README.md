@@ -24,6 +24,7 @@ uv run big-oh-no linus 3 1 7 2 9 5 12
 uv run big-oh-no bogo 3 2 1
 uv run big-oh-no bogo --max-attempts 5000 3 2 1
 uv run big-oh-no schrodinger 5 3 1 4
+uv run big-oh-no schrodinger --meanness 0.8 5 3 1 4
 ```
 
 If you see a `VIRTUAL_ENV ... does not match the project environment path` warning, another virtualenv is active in your shell. It is safe to ignore, or run `deactivate` before `uv` commands.

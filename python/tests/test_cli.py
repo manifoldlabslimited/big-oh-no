@@ -79,6 +79,20 @@ class TestSchrodingerCommand:
         result = runner.invoke(cli, ["schrodinger", "1", "2", "3"])
         assert result.exit_code == 0, result.output
 
+    def test_meanness_option_succeeds(self, runner):
+        result = runner.invoke(
+            cli,
+            ["schrodinger", "--meanness", "0.8", "3", "2", "1"],
+        )
+        assert result.exit_code == 0, result.output
+
+    def test_invalid_meanness_fails(self, runner):
+        result = runner.invoke(
+            cli,
+            ["schrodinger", "--meanness", "1.2", "3", "2", "1"],
+        )
+        assert result.exit_code != 0
+
 
 class TestListCommand:
     def test_list_succeeds(self, runner):
