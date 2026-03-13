@@ -141,7 +141,7 @@ big-oh-no bogo --max-attempts 5000 3 2 1
 
 *"You shouldn't have looked."*
 
-The list exists in a quantum superposition of sorted and unsorted states. Both eigenstates are displayed before observation. The moment you observe it, the wavefunction collapses — into whichever state is least convenient. If your input is already sorted, collapse to unsorted is **guaranteed**. Otherwise, it's a 50/50 coin flip the universe never lets you win.
+The list exists in a quantum superposition of sorted and unsorted states. Both eigenstates are displayed before observation. The moment you observe it, the wavefunction collapses — into whichever state is least convenient. If your input is already sorted, collapse to unsorted is **guaranteed**. Otherwise, collapse is probabilistic and biased by the `--meanness` dial. The meaner the universe, the less likely you are to observe the sorted branch.
 
 Unlike Stalin Sort or Linus Sort, **no elements are ever dropped** — all numbers survive, they just may end up in a deeply unhelpful order.
 
@@ -158,10 +158,20 @@ Unlike Stalin Sort or Linus Sort, **no elements are ever dropped** — all numbe
 - Computing sorted state: O(n log n)
 - Regret: O(∞)
 
+Optional parameter:
+- `--meanness <0.0-1.0>` to bias collapse probability
+  - The meaner the universe, the less likely you are to observe the sorted branch.
+  - `0.0`: kind universe (high chance of sorted collapse)
+  - `0.5`: roughly coin-flip behavior
+  - `1.0`: spiteful universe (low chance of sorted collapse)
+
 ```bash
 # Input: [5, 3, 1, 4]
-# Output: sorted or shuffled — 50/50, whichever is worse
+# Output: sorted or shuffled — bias controlled by --meanness
 big-oh-no schrodinger 5 3 1 4
+
+# Turn the meanness dial for extra drama
+big-oh-no schrodinger --meanness 0.8 5 3 1 4
 
 # Already sorted? Collapse to unsorted is guaranteed. The universe is watching.
 big-oh-no schrodinger 1 2 3
@@ -207,6 +217,7 @@ uv run big-oh-no wait 5 2 8 1 3
 uv run big-oh-no bogo 3 2 1
 uv run big-oh-no bogo --max-attempts 5000 3 2 1
 uv run big-oh-no schrodinger 5 3 1 4
+uv run big-oh-no schrodinger --meanness 0.8 5 3 1 4
 ```
 
 ---

@@ -62,3 +62,41 @@ def test_schrodinger_sort_collapses_to_sorted_when_random_cooperates(monkeypatch
 
     assert collapsed_to_sorted is True
     assert result == [1, 2, 3]
+
+
+def test_schrodinger_low_meanness_favors_sorted(monkeypatch):
+    monkeypatch.setattr(schrodinger_sort.time, "sleep", lambda _: None)
+    monkeypatch.setattr(schrodinger_sort.random, "choice", lambda seq: seq[0])
+    monkeypatch.setattr(schrodinger_sort.random, "shuffle", lambda lst: lst.reverse())
+    monkeypatch.setattr(schrodinger_sort.random, "random", lambda: 0.8)
+
+    result, collapsed_to_sorted, _ = schrodinger_sort.schrodinger_sort(
+        [4, 1, 3], meanness=0.0
+    )
+
+    assert collapsed_to_sorted is True
+    assert result == [1, 3, 4]
+
+
+def test_schrodinger_high_meanness_favors_unsorted(monkeypatch):
+    monkeypatch.setattr(schrodinger_sort.time, "sleep", lambda _: None)
+    monkeypatch.setattr(schrodinger_sort.random, "choice", lambda seq: seq[0])
+    monkeypatch.setattr(schrodinger_sort.random, "shuffle", lambda lst: lst.reverse())
+    monkeypatch.setattr(schrodinger_sort.random, "random", lambda: 0.8)
+
+    result, collapsed_to_sorted, _ = schrodinger_sort.schrodinger_sort(
+        [4, 1, 3], meanness=1.0
+    )
+
+    assert collapsed_to_sorted is False
+    assert result != [1, 3, 4]
+
+
+def test_schrodinger_rejects_out_of_range_meanness(monkeypatch):
+    monkeypatch.setattr(schrodinger_sort.time, "sleep", lambda _: None)
+
+    try:
+        schrodinger_sort.schrodinger_sort([2, 1], meanness=1.1)
+        assert False, "Expected ValueError for invalid meanness"
+    except ValueError as exc:
+        assert "meanness" in str(exc)
