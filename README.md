@@ -24,6 +24,7 @@ Some lose data. Some take forever. All are completely impractical. **But they're
 | **Wait Sort** | ⏳ The Patient One | Each number waits (value) seconds in a thread | O(max(n)) time |
 | **Stalin Sort** | ☭ The Authoritarian | Eliminates any element smaller than the current max | O(n) time, O(n) casualties |
 | **Linus Sort** | 🐧 The Code Reviewer | NAKs patches that break monotonic order | O(n) time, O(n) hurt feelings |
+| **Bogo Sort** | 🎲 The Gambler | Randomly shuffles until sorted | O((n+1)!) expected time |
 
 ---
 
@@ -105,6 +106,36 @@ big-oh-no linus 3 1 7 2 9 5 12
 
 ---
 
+## 🎲 Bogo Sort
+
+*"If we shuffle enough times, eventually statistics will apologize."*
+
+This algorithm keeps randomly shuffling the list and checking whether it is sorted. It is technically valid and practically awful.
+
+**How it works:**
+1. Check if the current list is sorted
+2. If not, shuffle randomly
+3. Repeat until sorted (or you run out of patience)
+
+**Complexity:**
+- Expected Time: O((n+1)!)
+- Space: O(1)
+- Reliability: Depends on luck
+
+Optional parameter:
+- `--max-attempts <n>` limits shuffle attempts before timing out (default: `10000`)
+
+```bash
+# Input: [3, 2, 1]
+# Output (eventually): [1, 2, 3]
+big-oh-no bogo 3 2 1
+
+# Cap attempts for faster feedback while demoing
+big-oh-no bogo --max-attempts 5000 3 2 1
+```
+
+---
+
 ## 📊 Implementation Status
 
 | Algorithm | Python | Rust |
@@ -112,6 +143,7 @@ big-oh-no linus 3 1 7 2 9 5 12
 | Wait Sort | ✅ | 🚧 |
 | Stalin Sort | ✅ | 🚧 |
 | Linus Sort | ✅ | 🚧 |
+| Bogo Sort | ✅ | 🚧 |
 
 ---
 
@@ -138,6 +170,8 @@ uv run big-oh-no --help
 uv run big-oh-no stalin 5 1 9 2 8 3 10
 uv run big-oh-no linus 3 1 7 2 9 5 12
 uv run big-oh-no wait 5 2 8 1 3
+uv run big-oh-no bogo 3 2 1
+uv run big-oh-no bogo --max-attempts 5000 3 2 1
 ```
 
 ---
