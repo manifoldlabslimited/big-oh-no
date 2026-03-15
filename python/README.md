@@ -2,6 +2,13 @@
 
 CLI-only implementation of intentionally impractical sorting algorithms.
 
+## Install
+
+```bash
+pip install big-oh-no
+big-oh-no --help
+```
+
 ## Run
 
 Quick run (no manual environment activation):
