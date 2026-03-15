@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "python/**"
+  workflow_dispatch:
 
 jobs:
   release:
