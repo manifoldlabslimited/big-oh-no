@@ -5,10 +5,6 @@ on:
     branches: [main]
     paths:
       - "python/**"
-  pull_request:
-    branches: [main]
-    paths:
-      - "python/**"
   schedule:
     - cron: "0 8 * * 1"  # every Monday at 08:00 UTC
 
