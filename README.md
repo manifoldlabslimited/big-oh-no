@@ -6,17 +6,38 @@
 [![codecov](https://codecov.io/gh/manifoldlabslimited/big-oh-no/graph/badge.svg?token=ad001c77-b9d4-4990-a7c8-00d96e5d7180)](https://codecov.io/gh/manifoldlabslimited/big-oh-no)
 [![PyPI](https://img.shields.io/pypi/v/big-oh-no)](https://pypi.org/project/big-oh-no/)
 ```
-    ██████╗ ██╗ ██████╗      ██████╗ ██╗███╗   ██╗ ██████╗ ██╗
-    ██╔══██╗██║██╔════╝     ██╔═══██╗╚██╗██╔╝ ██║██╔═══██╗██║
-    ██████╔╝██║██║  ███╗    ██║   ██║ ╚███╔╝  ██║██║   ██║██║
-    ██╔══██╗██║██║   ██║    ██║   ██║ ██╔██╗  ██║██║   ██║╚═╝
-    ██████╔╝██║╚██████╔╝    ╚██████╔╝██╔╝ ██╗ ██║╚██████╔╝██╗
-    ╚═════╝ ╚═╝ ╚═════╝      ╚═════╝ ╚═╝  ╚═╝ ╚═╝ ╚═════╝ ╚═╝
+┌───────────────────────────────────────────────────────────────────┐
+│██████╗ ██╗ ██████╗      ██████╗ ██╗  ██╗    ███╗   ██╗ ██████╗ ██╗│
+│██╔══██╗██║██╔════╝     ██╔═══██╗██║  ██║    ████╗  ██║██╔═══██╗██║│
+│██████╔╝██║██║  ███╗    ██║   ██║███████║    ██╔██╗ ██║██║   ██║██║│
+│██╔══██╗██║██║   ██║    ██║   ██║██╔══██║    ██║╚██╗██║██║   ██║╚═╝│
+│██████╔╝██║╚██████╔╝    ╚██████╔╝██║  ██║    ██║ ╚████║╚██████╔╝██╗│
+│╚═════╝ ╚═╝ ╚═════╝      ╚═════╝ ╚═╝  ╚═╝    ╚═╝  ╚═══╝ ╚═════╝ ╚═╝│
+└───────────────────────────────────────────────────────────────────┘
 ```
 
 **Big O(No)** is a lovingly curated collection of sorting algorithms that should never, ever be used. Each algorithm comes with its own unique persona and distinctive approach to achieving "sorted" results.
 
 Some lose data. Some take forever. All are completely impractical. **But they're fun.**
+
+---
+
+## 📦 Install
+
+```bash
+pip install big-oh-no
+```
+
+## ▶️ Run
+
+```bash
+big-oh-no stalin 5 1 9 2 8 3 10   # eliminates out-of-order elements
+big-oh-no linus 3 1 7 2 9 5 12    # NAKs patches that break order
+big-oh-no wait 5 2 8 1 3          # takes ~8 seconds
+big-oh-no bogo 3 2 1              # shuffles until sorted
+big-oh-no schrodinger 5 3 1 4     # collapses to the worst outcome
+big-oh-no urinal 8 3 6 1 9 2      # personal space first
+```
 
 ---
 
@@ -356,40 +377,7 @@ big-oh-no urinal --awkwardness 1.0 8 3 6 1 9 2
 
 ---
 
-## 🚀 Want to try it?
-
-1. Clone the repo.
-```bash
-git clone https://github.com/manifoldlabslimited/big-oh-no.git
-```
-
-2. Move into the Python folder.
-```bash
-cd big-oh-no/python
-```
-
-3. Install dependencies.
-```bash
-uv sync
-```
-
-4. Run the CLI.
-```bash
-uv run big-oh-no --help
-uv run big-oh-no stalin 5 1 9 2 8 3 10
-uv run big-oh-no linus 3 1 7 2 9 5 12
-uv run big-oh-no wait 5 2 8 1 3
-uv run big-oh-no bogo 3 2 1
-uv run big-oh-no bogo --max-attempts 5000 3 2 1
-uv run big-oh-no schrodinger 5 3 1 4
-uv run big-oh-no schrodinger --meanness 0.8 5 3 1 4
-uv run big-oh-no urinal 1 3 2
-uv run big-oh-no urinal 3 2 1
-```
-
----
-
-## 🤝 Want to contribute?
+## 🤝 Contribute
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) — adding a new algorithm, improving an existing one, or porting to a new language.
 
