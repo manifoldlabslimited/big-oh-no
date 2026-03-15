@@ -1,11 +1,6 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "python/**"
-      - ".github/workflows/ci.yml"
   pull_request:
     branches: [main]
     paths:
@@ -39,7 +34,7 @@ jobs:
           enable-cache: true
 
       - name: Install dependencies
-        run: uv sync --locked --extra dev
+        run: uv sync --frozen --extra dev
 
       - name: Run tests
         run: uv run pytest tests/ -q --cov=big_oh_no --cov-report=xml
