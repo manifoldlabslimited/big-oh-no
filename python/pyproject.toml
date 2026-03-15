@@ -8,6 +8,19 @@ version = "0.1.0"
 description = "A collection of utterly useless yet entertaining sorting algorithms"
 readme = "README.md"
 requires-python = ">=3.12"
+license = "MIT"
+authors = [
+    { name = "Manifold Labs", email = "neel@manifoldlabs.co.nz" },
+]
+keywords = ["sorting", "algorithms", "cli", "fun", "bogosort", "humor"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Utilities",
+]
 dependencies = [
     "click>=8.0",
     "numpy>=2.0",
@@ -16,9 +29,15 @@ dependencies = [
     "scipy>=1.13",
 ]
 
+[project.urls]
+Homepage = "https://github.com/manifoldlabslimited/big-oh-no"
+Repository = "https://github.com/manifoldlabslimited/big-oh-no"
+Issues = "https://github.com/manifoldlabslimited/big-oh-no/issues"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
+    "pytest-cov>=5.0",
 ]
 
 [project.scripts]
@@ -26,3 +45,7 @@ big-oh-no = "big_oh_no.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["big_oh_no*"]
+
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+build_command = "pip install build && python -m build"

@@ -32,3 +32,46 @@ Each language lives in its own top-level folder (e.g. `python/`, `rust/`). To ad
 See the README for the language you want to work on:
 
 - [Python](python/README.md)
+
+---
+
+## Commits and releases
+
+This project uses [Conventional Commits](https://www.conventionalcommits.org/). Every push to `main` is automatically processed by [python-semantic-release](https://python-semantic-release.readthedocs.io/), which reads commit messages to determine the next version, create a GitHub release, and publish to PyPI — no manual tagging required.
+
+### Commit format
+
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+| Type | What it triggers |
+|------|-----------------|
+| `feat:` | Minor version bump — new feature |
+| `fix:` | Patch version bump — bug fix |
+| `perf:` | Patch version bump — performance improvement |
+| `feat!:` or `BREAKING CHANGE:` footer | Major version bump |
+| `chore:`, `ci:`, `docs:`, `refactor:`, `style:`, `test:` | No release |
+
+### Examples
+
+```
+feat: add bubble sort variant
+fix: handle empty list in bogo sort
+perf: cache sorted check in schrodinger sort
+feat!: remove wait-sort (breaks CLI)
+```
+
+A `BREAKING CHANGE:` footer also triggers a major bump:
+
+```
+feat: overhaul CLI interface
+
+BREAKING CHANGE: --algorithm flag renamed to --sort
+```
+
+If your PR contains multiple unrelated changes, use multiple commits rather than squashing — PSR reads each commit individually to determine the version bump type.

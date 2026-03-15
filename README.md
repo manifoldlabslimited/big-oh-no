@@ -2,6 +2,9 @@
 
 > *A collection of utterly useless yet entertaining sorting algorithms*
 
+[![CI](https://github.com/manifoldlabslimited/big-oh-no/actions/workflows/ci.yml/badge.svg)](https://github.com/manifoldlabslimited/big-oh-no/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/manifoldlabslimited/big-oh-no/graph/badge.svg?token=ad001c77-b9d4-4990-a7c8-00d96e5d7180)](https://codecov.io/gh/manifoldlabslimited/big-oh-no)
+[![PyPI](https://img.shields.io/pypi/v/big-oh-no)](https://pypi.org/project/big-oh-no/)
 ```
     ██████╗ ██╗ ██████╗      ██████╗ ██╗███╗   ██╗ ██████╗ ██╗
     ██╔══██╗██║██╔════╝     ██╔═══██╗╚██╗██╔╝ ██║██╔═══██╗██║
