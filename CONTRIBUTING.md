@@ -37,7 +37,16 @@ See the README for the language you want to work on:
 
 ## Commits and releases
 
-This project uses [Conventional Commits](https://www.conventionalcommits.org/). Every push to `main` is automatically processed by [python-semantic-release](https://python-semantic-release.readthedocs.io/), which reads commit messages to determine the next version, create a GitHub release, and publish to PyPI — no manual tagging required.
+This project uses [Conventional Commits](https://www.conventionalcommits.org/). A git hook enforces the format locally — set it up once after cloning:
+
+```bash
+uv sync --extra dev
+uv run pre-commit install --hook-type commit-msg
+```
+
+After that, any commit with a non-conforming message will be rejected before it leaves your machine.
+
+Every push to `main` is automatically processed by [python-semantic-release](https://python-semantic-release.readthedocs.io/), which reads commit messages to determine the next version, create a GitHub release, and publish to PyPI — no manual tagging required.
 
 ### Commit format
 
