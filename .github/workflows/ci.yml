@@ -45,7 +45,8 @@ jobs:
         run: uv run pytest tests/ -q --cov=big_oh_no --cov-report=xml
 
       - name: Upload coverage to Codecov
+        if: ${{ !cancelled() }}
         uses: codecov/codecov-action@v5
         with:
-          files: coverage.xml
+          files: python/coverage.xml
           fail_ci_if_error: true
