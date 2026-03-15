@@ -92,7 +92,7 @@ def show_algorithms_table():
         "urinal",
         "🚽 The Personal Space Enthusiast",
         "Softmax etiquette utility with adjacency aversion dial",
-        "O(rounds × n²) time",
+        "O(rounds × n³) time",
     )
     
     console.print(table)

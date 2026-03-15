@@ -25,8 +25,8 @@ Some lose data. Some take forever. All are completely impractical. **But they're
 | **Stalin Sort** | ☭ The Authoritarian | Eliminates any element smaller than the current max | O(n) time, O(n) casualties |
 | **Linus Sort** | 🐧 The Code Reviewer | NAKs patches that break monotonic order | O(n) time, O(n) hurt feelings |
 | **Bogo Sort** | 🎲 The Gambler | Randomly shuffles until sorted | O((n+1)!) expected time |
-| **Schrödinger Sort** | 🐱 The Quantum Observer | Collapses to least convenient state on observation | O(1) collapse · O(∞) regret |
-| **Urinal Sort** | 🚽 The Personal Space Enthusiast | Each person picks the stall furthest from others and closest to a wall; read left→right, repeat until sorted or a cycle is detected | O(rounds × n²) time, O(n) space |
+| **Schrödinger Sort** | 🐱 The Quantum Observer | Collapses to least convenient state on observation | O(n log n) · O(∞) regret |
+| **Urinal Sort** | 🚽 The Personal Space Enthusiast | Each person picks the stall furthest from others and closest to a wall; read left→right, repeat until sorted or a cycle is detected | O(rounds × n³) time, O(n) space |
 
 ---
 
@@ -164,21 +164,17 @@ big-oh-no bogo --max-attempts 5000 3 2 1
 
 ### Inspiration
 
-In 1935, Schrödinger came up with a thought experiment to show how weird quantum mechanics was. You put a cat in a box with a radioactive atom. If the atom decays, the cat dies. Quantum mechanics says the atom is in both states at once until you look — so the cat is simultaneously alive and dead. Schrödinger's point was that this is ridiculous and something must be wrong with the theory. Physicists mostly just accepted it and moved on.
+In 1935, Schrödinger came up with a thought experiment to show how weird quantum mechanics was. A cat is put in a box with a radioactive atom. If the atom decays, the cat dies. Quantum mechanics says the atom is in both states at once until observed — so the cat is simultaneously alive and dead. Schrödinger's point was that this is ridiculous and something must be wrong with the theory. Physicists mostly just kept using the maths and agreed to argue about what it means later.
 
-Schrödinger Sort puts your list in that box. It's sorted and unsorted at the same time. When you look, it collapses into one state. It will almost certainly be the wrong one.
+Schrödinger Sort puts a list in that box. It's sorted and unsorted at the same time — both states exist in superposition until the algorithm is asked for a result. At that point the wavefunction collapses into one outcome. The bias is built in: the worse outcome is always more likely, and the `--meanness` dial controls just how spiteful the universe feels today. If the list was already sorted going in, collapse to unsorted is guaranteed — the algorithm sees a sorted input, decides that's too convenient, and deliberately destroys it. There is no kindness here. The universe observed your smugly pre-sorted list and chose violence.
 
-The list exists in a quantum superposition of sorted and unsorted states. Both eigenstates are displayed before observation. The moment you observe it, the wavefunction collapses — into whichever state is least convenient. If your input is already sorted, collapse to unsorted is **guaranteed**. Otherwise, collapse is probabilistic and biased by the `--meanness` dial. The meaner the universe, the less likely you are to observe the sorted branch.
-
-Unlike Stalin Sort or Linus Sort, **no elements are ever dropped** — all numbers survive, they just may end up in a deeply unhelpful order.
+All numbers survive — none are dropped. They just end up in an order that was specifically chosen to annoy.
 
 **How it works:**
-1. The list enters **quantum superposition** — simultaneously sorted and unsorted
-2. Both eigenstates are displayed before observation (enjoy it while it lasts)
-3. You observe it — triggering **wavefunction collapse** (your fault, not ours)
-4. It collapses to whichever state is **least convenient** 💥
-5. If it was already sorted: collapse to unsorted is **guaranteed**
-6. Result: a list of all your original numbers, in an order that spite chose
+1. Take the input list and produce two versions: sorted and shuffled. Both are shown — the list is simultaneously sorted and unsorted.
+2. Observe it. The act of observation collapses it into one state.
+3. It collapses into whichever state is least convenient, biased by `--meanness`.
+4. If the input was already sorted, it always collapses to shuffled.
 
 **Complexity:**
 - Collapse: O(1)
@@ -186,21 +182,19 @@ Unlike Stalin Sort or Linus Sort, **no elements are ever dropped** — all numbe
 - Regret: O(∞)
 
 Optional parameter:
-- `--meanness <0.0-1.0>` to bias collapse probability
-  - The meaner the universe, the less likely you are to observe the sorted branch.
-  - `0.0`: kind universe (high chance of sorted collapse)
-  - `0.5`: roughly coin-flip behavior
-  - `1.0`: spiteful universe (low chance of sorted collapse)
+- `--meanness <0.0–1.0>` — how spiteful the universe feels today
+  - `0.0`: kind universe — you're more likely to get sorted
+  - `0.5`: roughly coin-flip behaviour
+  - `1.0`: spiteful universe — you're more likely to get shuffled
 
 ```bash
-# Input: [5, 3, 1, 4]
-# Output: sorted or shuffled — bias controlled by --meanness
+# Sorted or shuffled — the universe decides
 big-oh-no schrodinger 5 3 1 4
 
-# Turn the meanness dial for extra drama
+# Increase the meanness for worse odds
 big-oh-no schrodinger --meanness 0.8 5 3 1 4
 
-# Already sorted? Collapse to unsorted is guaranteed. The universe is watching.
+# Already sorted — collapse to unsorted is guaranteed
 big-oh-no schrodinger 1 2 3
 ```
 
@@ -300,7 +294,7 @@ Round 2:  [3, 1, 2]  →  3→stall 0,  1→stall 2,  2→stall 1  →  reading:
 `3` is anchored to the left corner. `1` and `2` chase each other around it forever.
 
 **Complexity:**
-- Time: O(rounds × n²)
+- Time: O(rounds × n³)
 - Space: O(n)
 - Personal space violations: O(rounds × n)
 
