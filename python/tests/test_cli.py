@@ -94,6 +94,44 @@ class TestSchrodingerCommand:
         assert result.exit_code != 0
 
 
+class TestUrinalCommand:
+    def test_valid_input_succeeds(self, runner):
+        result = runner.invoke(cli, ["urinal", "8", "3", "6", "1", "9", "2"])
+        assert result.exit_code == 0, result.output
+
+    def test_no_numbers_fails(self, runner):
+        result = runner.invoke(cli, ["urinal"])
+        assert result.exit_code != 0
+
+    def test_max_rounds_option_succeeds(self, runner):
+        result = runner.invoke(cli, ["urinal", "--max-rounds", "5", "1", "3", "2"])
+        assert result.exit_code == 0, result.output
+
+    def test_max_rounds_zero_fails_validation(self, runner):
+        result = runner.invoke(cli, ["urinal", "--max-rounds", "0", "1", "3", "2"])
+        assert result.exit_code != 0
+
+    def test_awkwardness_option_succeeds(self, runner):
+        result = runner.invoke(
+            cli,
+            ["urinal", "--awkwardness", "0.2", "1", "3", "2"],
+        )
+        assert result.exit_code == 0, result.output
+
+    def test_awkwardness_out_of_range_fails_validation(self, runner):
+        result = runner.invoke(
+            cli,
+            ["urinal", "--awkwardness", "1.5", "1", "3", "2"],
+        )
+        assert result.exit_code != 0
+
+    def test_first_entrant_message_no_longer_claims_edge(self, runner):
+        result = runner.invoke(cli, ["urinal", "1", "3", "2"])
+        assert result.exit_code == 0, result.output
+        assert "first in — no neighbours yet" in result.output
+        assert "first in — took the edge" not in result.output
+
+
 class TestListCommand:
     def test_list_succeeds(self, runner):
         result = runner.invoke(cli, ["list"])

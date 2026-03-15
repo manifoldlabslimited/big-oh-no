@@ -1,7 +1,12 @@
+import numpy as np
+import pytest
+from pydantic import ValidationError
+
 from big_oh_no import bogo_sort
 from big_oh_no import linus_sort
 from big_oh_no import schrodinger_sort
 from big_oh_no import stalin_sort
+from big_oh_no import urinal_sort
 from big_oh_no import wait_sort
 
 
@@ -100,3 +105,35 @@ def test_schrodinger_rejects_out_of_range_meanness(monkeypatch):
         assert False, "Expected ValueError for invalid meanness"
     except ValueError as exc:
         assert "meanness" in str(exc)
+
+
+def test_urinal_sort_already_sorted_needs_no_rounds():
+    result, rounds, logs, did_sort = urinal_sort.urinal_sort([1, 2, 3])
+
+    assert did_sort is True
+    assert rounds == 0
+    assert result == [1, 2, 3]
+
+
+def test_urinal_sort_sorts_in_one_round():
+    # [1, 3, 2] with 3 stalls:
+    #   1 → stall 0 (first in),  3 → stall 2,  2 → stall 1
+    #   Reading: [1, 2, 3]  ✓
+    result, rounds, logs, did_sort = urinal_sort.urinal_sort([1, 3, 2])
+
+    assert did_sort is True
+    assert result == [1, 2, 3]
+    assert rounds == 1
+
+
+def test_urinal_sort_detects_cycle():
+    # [3, 2, 1]: round 1 → [3, 1, 2], round 2 → [3, 2, 1] — back to start.
+    result, rounds, logs, did_sort = urinal_sort.urinal_sort([3, 2, 1], max_rounds=50)
+
+    assert did_sort is False
+
+
+def test_urinal_sort_rejects_out_of_range_awkwardness():
+    with pytest.raises(ValidationError) as exc_info:
+        urinal_sort.urinal_sort([2, 1], awkwardness=1.2)
+    assert "awkwardness" in str(exc_info.value)
