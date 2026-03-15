@@ -88,6 +88,12 @@ def show_algorithms_table():
         "Collapses to least convenient state on observation",
         "O(1) collapse · O(∞) regret",
     )
+    table.add_row(
+        "urinal",
+        "🚽 The Personal Space Enthusiast",
+        "Softmax etiquette utility with adjacency aversion dial",
+        "O(rounds × n²) time",
+    )
     
     console.print(table)
 
@@ -108,6 +114,7 @@ def cli(ctx):
         big-oh-no linus 3 1 7 2 9 5 12
         big-oh-no bogo 3 2 1
         big-oh-no schrodinger 5 3 1 4
+        big-oh-no urinal 8 3 6 1 9 2
     """
     if ctx.invoked_subcommand is None:
         show_banner()
@@ -447,6 +454,83 @@ def schrodinger(meanness, numbers):
     sch.console.print()
     sch.console.print(sch.create_result_panel(original, result, collapsed_to_sorted, comment))
     sch.console.print()
+
+
+@cli.command()
+@click.option(
+    "--max-rounds",
+    default=200,
+    show_default=True,
+    type=click.IntRange(min=1),
+    help="Maximum rounds before giving up (cycle detection usually kicks in first).",
+)
+@click.option(
+    "--awkwardness",
+    default=0.5,
+    show_default=True,
+    type=click.FloatRange(min=0.0, max=1.0),
+    help="Neighbour discomfort 0–1. 0.0: indifferent to neighbours. 1.0: maximise distance from everyone.",
+)
+@click.argument('numbers', nargs=-1, type=int, required=True)
+def urinal(max_rounds, awkwardness, numbers):
+    """
+    🚽 Urinal Sort - Sorting by restroom etiquette. Correctness not guaranteed.
+
+    Numbers enter in list order. Each one scores every empty stall by
+    wall attraction and neighbour repulsion, then picks the highest-scoring stall.
+    End of round gives a new ordering. Repeat until sorted or a cycle is detected.
+
+    \b
+    Examples:
+        big-oh-no urinal 1 3 2
+        big-oh-no urinal --awkwardness 0.2 8 3 6 1 9 2
+        big-oh-no urinal 8 3 6 1 9 2
+        big-oh-no urinal 3 2 1
+    """
+    from . import urinal_sort as us
+
+    nums = parse_numbers(numbers)
+    original = nums.copy()
+
+    us.console.print(Panel(
+        "[bold]How Urinal Sort Works:[/bold]\n\n"
+        "• The [cyan]unsorted values[/cyan] are the people walking in\n"
+        "• Each empty stall is scored by wall attraction minus neighbour repulsion\n"
+        "• Each person picks the highest-scoring available stall\n"
+        "• [magenta]Awkwardness[/magenta] — how much discomfort each person feels around close neighbours (0 = indifferent, 1 = maximise distance)\n"
+        "• End of round: read stalls left\u2192right \u2014 that is the new order\n"
+        "• Repeat until sorted, or until a [red]cycle[/red] confirms eternal restroom purgatory\n\n"
+        "[dim]Complexity: O(rounds \u00d7 n\u00b2) time \u00b7 O(n) space[/dim]",
+        title="[bold cyan]🚽 The Rules[/bold cyan]",
+        box=box.ROUNDED,
+        padding=(1, 2),
+    ))
+
+    us.console.print(
+        f"\n[dim]Numbers:[/dim] [bold cyan]{nums}[/bold cyan]\n"
+        f"[dim]Awkwardness:[/dim] [bold magenta]{awkwardness:.2f}[/bold magenta]"
+    )
+
+    result, rounds_taken, round_logs, did_sort = us.urinal_sort(
+        nums,
+        max_rounds=max_rounds,
+        awkwardness=awkwardness,
+    )
+
+    us.console.print()
+    us.console.print(Align.center(
+        us.create_result_table(
+            original,
+            result,
+            rounds_taken,
+            round_logs,
+            did_sort,
+            awkwardness,
+        )
+    ))
+    us.console.print()
+    us.console.print(us.create_result_panel(original, result, rounds_taken, did_sort))
+    us.console.print()
 
 
 def main():
