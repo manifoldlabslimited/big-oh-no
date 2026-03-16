@@ -2,6 +2,25 @@
 
 <!-- version list -->
 
+## v1.3.0 (2026-03-16)
+
+### Bug Fixes
+
+- Spell out darwin sort complexity variables in algorithm table
+  ([`a003785`](https://github.com/manifoldlabslimited/big-oh-no/commit/a003785157f320771fc886f3157338333d1cae19))
+
+- Use theoretical complexity O(g × p × n) in algorithm table
+  ([`8824859`](https://github.com/manifoldlabslimited/big-oh-no/commit/8824859f20f61a403a0f51426cacd32c2d76f3fb))
+
+### Features
+
+- Add darwin sort algorithm
+  ([`ac4fef9`](https://github.com/manifoldlabslimited/big-oh-no/commit/ac4fef934180473b87ff674fc5d0c97a96ac8adb))
+
+- Add Evolution Sort algorithm using DEAP genetic algorithm library
+  ([`39ccc3e`](https://github.com/manifoldlabslimited/big-oh-no/commit/39ccc3e414cc95308bc3c42ebd8a01c99a1ec679))
+
+
 ## v1.2.0 (2026-03-16)
 
 ### Features
