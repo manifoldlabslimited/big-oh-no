@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.2.0 (2026-03-16)
+
+### Features
+
+- Enhance schrodinger and urinal sort animations
+  ([`3d3c7a3`](https://github.com/manifoldlabslimited/big-oh-no/commit/3d3c7a3d1cbc4580e3e075df3a8ab9f1192db9f3))
+
+
 ## v1.1.0 (2026-03-16)
 
 ### Documentation
