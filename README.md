@@ -54,7 +54,7 @@ big-oh-no darwin 5 3 1 4 2            # survival of the fittest permutation
 | **Schrödinger Sort** | 🐱 The Quantum Observer | Collapses to least convenient state on observation | O(n log n) · O(∞) regret |
 | **Urinal Sort** | 🚽 The Personal Space Enthusiast | Each person picks the stall furthest from others and closest to a wall; read left→right, repeat until sorted or a cycle is detected | O(rounds × n³) time, O(n) space |
 | **Digit Sort** | 🗂️ The Bucket Bureaucrat | Routes each number to its digit bucket, pass by pass. No comparisons. Just paperwork. | O(d × n) time, 0 comparisons |
-| **Darwin Sort** | 🧬 The Naturalist | Evolves a population of permutations through selection, crossover, and mutation until the sorted order emerges — or the species goes extinct | O(g × p × n) time |
+| **Darwin Sort** | 🧬 The Naturalist | Evolves a population of permutations through selection, crossover, and mutation until the sorted order emerges — or the species goes extinct | O(generations × population × n) time |
 
 ---
 
