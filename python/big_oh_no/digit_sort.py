@@ -6,6 +6,9 @@ at a time, from least-significant to most-significant digit.
 No comparisons are ever made between numbers.
 """
 
+import random
+import time
+
 from rich import box
 from rich.align import Align
 from rich.panel import Panel
@@ -14,52 +17,44 @@ from rich.table import Table
 
 from .utils import console, make_sort_header
 
-# Bureaucratic filing commentary, one per pass
-PASS_OPENING_REMARKS = [
-    "Examining the ones column. All forms routed by least-significant digit — as per Form 7G.",
-    "Proceeding to the tens column. Please hold your enquiries until all buckets are full.",
-    "Hundreds column now under review. The department thanks you for your patience.",
-    "Thousands digit processing initiated. Kindly refrain from comparing values at this time.",
-    "Ten-thousands column. We are aware this is taking longer than expected. This is normal.",
-]
-
-BUCKET_ASSIGNMENT_FLAVOUR = [
+FILING_REMARKS = [
     "Routed. No comparison was harmed in this process.",
-    "Filed correctly under the appropriate digit. Nothing personal.",
-    "Deposited into bucket as directed by departmental policy.",
-    "Allocated to correct bin — no individual judgement involved.",
-    "Classified and shelved. The value of this number is irrelevant to us.",
+    "Filed under the appropriate digit. Nothing personal.",
+    "Deposited as directed by departmental policy.",
+    "Allocated to correct bin — no judgement involved.",
+    "Classified and shelved. The value is irrelevant to us.",
+    "Stamped and filed. Next.",
+    "Processed without prejudice.",
 ]
 
 COLLECTION_REMARKS = [
-    "Collecting buckets 0 through 9 in strict order. No preferential treatment.",
-    "Re-queuing forms from all buckets. The bucket number, not the contents, governs order.",
-    "Gathered and re-queued. Another pass awaits, if regulations require it.",
-    "All buckets emptied left to right. The bureaucracy grinds on.",
-    "Collection complete. Deposited into the outbox for next-pass processing.",
+    "Collecting buckets 0→9. No preferential treatment.",
+    "Re-queuing from all buckets. The bureaucracy grinds on.",
+    "Gathered and re-queued. Another pass awaits.",
+    "All buckets emptied left to right. Order maintained.",
+    "Collection complete. Deposited for next-pass processing.",
 ]
 
 COMPLETION_REMARKS = [
-    "All forms filed correctly. Sorting complete. A comparison-free workplace was maintained throughout.",
-    "Procedure concluded. No numbers were compared. The department is proud of its restraint.",
-    "Processing finished. The sorted list has been approved, stamped, and filed in triplicate.",
-    "Workflow terminated normally. Zero comparisons. Maximum paperwork. Perfect outcome.",
+    "Sorting complete. A comparison-free workplace was maintained throughout.",
+    "Procedure concluded. Zero comparisons. The department is proud.",
+    "Processing finished. Approved, stamped, and filed in triplicate.",
+    "Workflow terminated normally. Zero comparisons. Maximum paperwork.",
 ]
+
+ORDINALS = ["ones", "tens", "hundreds", "thousands", "ten-thousands"]
 
 
 def create_header():
     return make_sort_header(
-        "🗂️", "digit", "No comparisons ever. Just buckets, bureaucracy, and blind faith in process.", "blue"
+        "🗂️", "digit", "No comparisons. Just buckets and blind faith in process.", "blue"
     )
 
 
 def create_stats_table(numbers):
     """Create input statistics table."""
-    if not numbers:
-        return Table(title="📋 Intake Form", box=box.ROUNDED)
-
     table = Table(
-        title="📋 Intake Form — Please Read Before Processing",
+        title="📋 Intake Form",
         box=box.ROUNDED,
         title_style="bold yellow",
         show_header=True,
@@ -72,10 +67,9 @@ def create_stats_table(numbers):
     max_val = max(numbers)
     num_digits = len(str(max_val))
 
-    table.add_row("Batch submitted for filing", f"[bold]{numbers}[/bold]")
-    table.add_row("Number of items in batch", f"[cyan]{len(numbers)}[/cyan]")
-    table.add_row("Largest value on record", f"[magenta]{max_val}[/magenta]")
-    table.add_row("Passes required (digits)", f"[blue]{num_digits}[/blue]")
+    table.add_row("Batch", f"[bold]{numbers}[/bold]")
+    table.add_row("Items", f"[cyan]{len(numbers)}[/cyan]")
+    table.add_row("Passes required", f"[blue]{num_digits}[/blue]")
     table.add_row("Comparisons authorised", "[bold red]0[/bold red]")
 
     return table
@@ -86,18 +80,16 @@ def _get_digit(number, position):
     return (number // (10 ** position)) % 10
 
 
+def _ordinal_label(pos):
+    return ORDINALS[pos] if pos < len(ORDINALS) else f"10^{pos}"
+
+
 def digit_sort(numbers):
     """
-    Sort numbers using Digit Sort (LSD Radix Sort).
+    Sort numbers using Digit Sort (LSD Radix Sort) with animated output.
 
-    Distributes numbers into 10 buckets (0–9) based on the current digit
-    position, from least-significant to most-significant, collecting and
-    repeating until all digit positions are processed.
-
-    Returns:
-        sorted_nums: the fully sorted list
-        passes: list of (digit_position, buckets_snapshot, collected_order)
-                one entry per digit-position pass
+    Distributes numbers into 10 buckets (0-9) based on the current digit
+    position, from least-significant to most-significant.
     """
     if not numbers:
         return [], []
@@ -107,63 +99,78 @@ def digit_sort(numbers):
     num_digits = len(str(max_val))
     passes = []
 
+    console.print()
+    console.print(Align.center(create_stats_table(nums)))
+    console.print()
+
     for pos in range(num_digits):
+        label = _ordinal_label(pos)
+
+        console.print(Rule(
+            f"[bold blue]🗂️  Pass {pos + 1} — {label} digit[/bold blue]",
+            style="blue",
+        ))
+        console.print()
+
         buckets = [[] for _ in range(10)]
+
+        # Animate each number being filed into its bucket
         for n in nums:
             digit = _get_digit(n, pos)
             buckets[digit].append(n)
+            remark = random.choice(FILING_REMARKS)
+            console.print(
+                f"  [cyan]{n:>5}[/cyan]  →  bucket [bold blue]{digit}[/bold blue]  "
+                f"[dim italic]({remark})[/dim italic]"
+            )
+            time.sleep(0.25)
 
+        console.print()
+
+        # Show bucket summary
+        console.print(_create_buckets_summary(buckets))
+
+        # Collect from buckets
         collected = [n for bucket in buckets for n in bucket]
         passes.append((pos, [list(b) for b in buckets], list(collected)))
         nums = collected
 
+        collection_remark = COLLECTION_REMARKS[pos] if pos < len(COLLECTION_REMARKS) else "Collecting and re-queuing."
+        console.print(
+            f"  [dim]→[/dim] [bold]{collected}[/bold]  "
+            f"[dim italic]{collection_remark}[/dim italic]"
+        )
+        console.print()
+        time.sleep(0.3)
+
     return nums, passes
 
 
-def create_buckets_table(pos, buckets):
-    """Render a pass's bucket distribution as a Rich table."""
-    ordinal = ["ones", "tens", "hundreds", "thousands", "ten-thousands"]
-    label = ordinal[pos] if pos < len(ordinal) else f"10^{pos}"
-    remark = PASS_OPENING_REMARKS[pos] if pos < len(PASS_OPENING_REMARKS) else "Processing next digit column."
-
+def _create_buckets_summary(buckets):
+    """Compact bucket summary showing only non-empty buckets."""
     table = Table(
-        title=f"🗂️  Pass {pos + 1} — [bold cyan]{label}[/bold cyan] digit\n"
-              f"[dim italic]{remark}[/dim italic]",
-        box=box.ROUNDED,
-        title_style="bold yellow",
+        box=box.SIMPLE_HEAVY,
         show_header=True,
         header_style="bold blue",
+        padding=(0, 1),
     )
 
     table.add_column("Bucket", style="bold cyan", justify="center", width=8)
-    table.add_column("Filed Items", style="green")
-    table.add_column("Count", style="magenta", justify="center", width=7)
-    table.add_column("Status", style="dim", width=14)
+    table.add_column("Contents", style="green")
+    table.add_column("#", style="magenta", justify="center", width=5)
 
     for digit, bucket in enumerate(buckets):
         if bucket:
-            contents = "  ".join(f"[bold]{n}[/bold]" for n in bucket)
-            table.add_row(
-                f"[bold]{digit}[/bold]",
-                contents,
-                str(len(bucket)),
-                "[green]Filed ✓[/green]",
-            )
-        else:
-            table.add_row(
-                f"[dim]{digit}[/dim]",
-                "[dim]— empty —[/dim]",
-                "[dim]0[/dim]",
-                "[dim]No submissions[/dim]",
-            )
+            contents = ", ".join(str(n) for n in bucket)
+            table.add_row(str(digit), f"[bold]{contents}[/bold]", str(len(bucket)))
 
-    return table
+    return Align.center(table)
 
 
 def create_result_table(original, sorted_nums, passes):
     """Create a summary table after all passes."""
     table = Table(
-        title="📁 Final Filing Report",
+        title="📁 Filing Report",
         box=box.ROUNDED,
         title_style="bold green",
         show_header=True,
@@ -171,14 +178,27 @@ def create_result_table(original, sorted_nums, passes):
     )
 
     table.add_column("Stage", style="dim")
-    table.add_column("Output Sequence", style="cyan")
+    table.add_column("Sequence", style="cyan")
 
-    table.add_row("[dim]Submitted batch[/dim]", f"{original}")
-    for pos, buckets, collected in passes:
-        ordinal = ["ones", "tens", "hundreds", "thousands", "ten-thousands"]
-        label = ordinal[pos] if pos < len(ordinal) else f"10^{pos}"
-        table.add_row(f"After {label} pass", f"[bold]{collected}[/bold]")
-
-    table.add_row("[bold green]Approved & filed[/bold green]", f"[bold green]{sorted_nums}[/bold green]")
+    table.add_row("Submitted", f"{original}")
+    for pos, _buckets, collected in passes:
+        table.add_row(f"After {_ordinal_label(pos)} pass", f"[bold]{collected}[/bold]")
+    table.add_row("[bold green]Filed & approved[/bold green]", f"[bold green]{sorted_nums}[/bold green]")
 
     return table
+
+
+def create_comparison_bars(original, sorted_nums):
+    """Visual bar comparison of before and after."""
+    max_val = max(max(original), max(sorted_nums)) if original else 1
+    bar_scale = 25 / max_val
+
+    console.print("\n[bold yellow]📋 Before:[/bold yellow]")
+    for num in original:
+        bar = "█" * int(num * bar_scale)
+        console.print(f"  [dim]{num:>5}[/dim] │[magenta]{bar}[/magenta]")
+
+    console.print("\n[bold green]✅ After:[/bold green]")
+    for num in sorted_nums:
+        bar = "█" * int(num * bar_scale)
+        console.print(f"  [dim]{num:>5}[/dim] │[green]{bar}[/green]")

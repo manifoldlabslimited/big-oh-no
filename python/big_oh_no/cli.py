@@ -9,6 +9,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich import box
 from rich.align import Align
+from rich.rule import Rule
 from .utils import SortInput, ValidationError
 
 console = Console()
@@ -405,7 +406,6 @@ def schrodinger(meanness, numbers):
 
     The list exists in quantum superposition until observed. On observation
     the wavefunction collapses into whichever state is least convenient.
-    Already-sorted input is guaranteed to be destroyed.
 
     \b
     Examples:
@@ -418,44 +418,8 @@ def schrodinger(meanness, numbers):
     nums = parse_numbers(numbers)
     original = nums.copy()
 
-    sch.console.print()
-    sch.console.print(sch.create_header())
-
-    sch.console.print(Panel(
-        "[bold]How Schrödinger Sort Works:[/bold]\n\n"
-        "• The list enters [cyan]quantum superposition[/cyan] — simultaneously sorted and unsorted\n"
-        "• Both eigenstates are displayed before observation\n"
-        "• You [red]observe[/red] it, collapsing the wavefunction\n"
-        "• It collapses to whichever state is [bold red]least convenient[/bold red]\n"
-        "• Already-sorted input is [red]always[/red] destroyed\n\n"
-        "[dim]Use --meanness 0.0-1.0 to bias collapse probability[/dim]\n"
-        "[dim]The meaner the universe, the less likely you are to observe the sorted branch.[/dim]\n"
-        "[dim]0.0 = kind universe · 0.5 = coin-flip energy · 1.0 = pure spite[/dim]\n\n"
-        "[dim]Complexity: O(1) collapse · O(n log n) to compute sorted state · O(∞) regret[/dim]",
-        title="[bold cyan]💡 Algorithm Explanation[/bold cyan]",
-        box=box.ROUNDED,
-        padding=(1, 2),
-    ))
-
-    sch.console.print(
-        f"\n[dim]Numbers:[/dim] [bold cyan]{nums}[/bold cyan]\n"
-        f"[dim]Meanness:[/dim] [bold magenta]{meanness:.2f}[/bold magenta]"
-    )
-
     result, collapsed_to_sorted, comment = sch.schrodinger_sort(nums, meanness=meanness)
-    estimated_p_sorted = sch.collapse_probability(nums, meanness)
 
-    sch.console.print()
-    sch.console.print(Align.center(
-        sch.create_result_table(
-            original,
-            result,
-            collapsed_to_sorted,
-            comment,
-            meanness,
-            estimated_p_sorted,
-        )
-    ))
     sch.console.print()
     sch.console.print(sch.create_result_panel(original, result, collapsed_to_sorted, comment))
     sch.console.print()
@@ -481,9 +445,8 @@ def urinal(max_rounds, awkwardness, numbers):
     """
     🚽 Urinal Sort - Sorting by restroom etiquette. Correctness not guaranteed.
 
-    Numbers enter in list order. Each one scores every empty stall by
-    wall attraction and neighbour repulsion, then picks the highest-scoring stall.
-    End of round gives a new ordering. Repeat until sorted or a cycle is detected.
+    Numbers enter in list order. Each one picks the least exposed stall.
+    Read stalls left to right for the new order. Repeat until sorted or stuck.
 
     \b
     Examples:
@@ -496,25 +459,6 @@ def urinal(max_rounds, awkwardness, numbers):
 
     nums = parse_numbers(numbers)
     original = nums.copy()
-
-    us.console.print(Panel(
-        "[bold]How Urinal Sort Works:[/bold]\n\n"
-        "• The [cyan]unsorted values[/cyan] are the people walking in\n"
-        "• Each empty stall is scored by wall attraction minus neighbour repulsion\n"
-        "• Each person picks the highest-scoring available stall\n"
-        "• [magenta]Awkwardness[/magenta] — how much discomfort each person feels around close neighbours (0 = indifferent, 1 = maximise distance)\n"
-        "• End of round: read stalls left\u2192right \u2014 that is the new order\n"
-        "• Repeat until sorted, or until a [red]cycle[/red] confirms eternal restroom purgatory\n\n"
-        "[dim]Complexity: O(rounds \u00d7 n\u00b2) time \u00b7 O(n) space[/dim]",
-        title="[bold cyan]🚽 The Rules[/bold cyan]",
-        box=box.ROUNDED,
-        padding=(1, 2),
-    ))
-
-    us.console.print(
-        f"\n[dim]Numbers:[/dim] [bold cyan]{nums}[/bold cyan]\n"
-        f"[dim]Awkwardness:[/dim] [bold magenta]{awkwardness:.2f}[/bold magenta]"
-    )
 
     result, rounds_taken, round_logs, did_sort = us.urinal_sort(
         nums,
@@ -546,7 +490,6 @@ def digit(numbers):
 
     Each number is routed to its bucket based on its current digit —
     no value judgements, no comparisons. Just process, file, repeat.
-    The bureaucracy does not rank. It classifies.
 
     \b
     Examples:
@@ -561,51 +504,36 @@ def digit(numbers):
 
     ds.console.print()
     ds.console.print(ds.create_header())
-
+    ds.console.print()
     ds.console.print(Panel(
-        "[bold]📋 Department of Numerical Classification — Operational Directive 7G[/bold]\n\n"
-        "• Determine the number of [cyan]digit columns[/cyan] in the largest submitted value\n"
-        "• For each column, starting with the [cyan]ones digit[/cyan]:\n"
-        "    — Route each number to its [blue]designated bucket[/blue] (0 through 9)\n"
-        "    — The digit is the routing code. The value is [italic]irrelevant[/italic].\n"
-        "    — Collect buckets 0 → 9, preserving arrival order within each bucket\n"
-        "• Repeat for [cyan]tens[/cyan], [cyan]hundreds[/cyan], [cyan]thousands[/cyan], … until all columns processed\n"
-        "• The output is classified. No appeals. No comparisons. No exceptions.\n\n"
-        "[bold red]Comparisons between values are strictly prohibited under Section 4(b).[/bold red]\n\n"
-        "[dim]Complexity: O(d × n) time · O(n + 10) space · 0 comparisons · ∞ paperwork[/dim]",
-        title="[bold cyan]🗂️  Processing Guidelines[/bold cyan]",
+        "• Route each number to a [blue]bucket (0–9)[/blue] based on its current digit\n"
+        "• Collect buckets in order, repeat for each digit position\n"
+        "• [bold red]No comparisons between values. Ever.[/bold red]\n\n"
+        "[dim]O(d × n) time · 0 comparisons · ∞ paperwork[/dim]",
+        title="[bold cyan]🗂️  How It Works[/bold cyan]",
         box=box.ROUNDED,
-        padding=(1, 2),
+        padding=(0, 2),
     ))
 
-    ds.console.print(f"\n[dim]Batch submitted:[/dim] [bold cyan]{nums}[/bold cyan]")
-
+    # digit_sort now handles animation internally
     sorted_nums, passes = ds.digit_sort(nums)
 
+    ds.console.print(Rule("[bold green]✨ Filing Complete[/bold green]", style="green"))
     ds.console.print()
-    ds.console.print(Align.center(ds.create_stats_table(original)))
-    ds.console.print()
-
-    for pos, buckets, collected in passes:
-        ds.console.print(Align.center(ds.create_buckets_table(pos, buckets)))
-        collection_remark = ds.COLLECTION_REMARKS[pos] if pos < len(ds.COLLECTION_REMARKS) else "Collecting and re-queuing."
-        ds.console.print(
-            f"  [dim]→[/dim] [bold]{collected}[/bold]  "
-            f"[dim italic]({collection_remark})[/dim italic]"
-        )
-        ds.console.print()
 
     ds.console.print(Align.center(ds.create_result_table(original, sorted_nums, passes)))
     ds.console.print()
+    ds.create_comparison_bars(original, sorted_nums)
 
     completion = random.choice(ds.COMPLETION_REMARKS)
+    ds.console.print()
     ds.console.print(Panel(
-        f"[bold green]✅ {len(original)} items classified and filed in {len(passes)} pass(es).[/bold green]\n\n"
-        f"[dim]Submitted batch:[/dim] {original}\n"
-        f"[dim]Approved output:[/dim] [bold cyan]{sorted_nums}[/bold cyan]\n\n"
-        f"[dim italic]{completion}[/dim italic]\n\n"
-        "[dim]Total comparisons made: [bold red]0[/bold red]. The department is proud.[/dim]",
-        title="[bold yellow]🗂️  Processing Complete — Form DS-1 Approved[/bold yellow]",
+        f"[bold green]✅ {len(original)} items filed in {len(passes)} pass(es). "
+        f"0 comparisons.[/bold green]\n\n"
+        f"[dim]Original:[/dim] {original}\n"
+        f"[dim]Sorted:[/dim]   [bold cyan]{sorted_nums}[/bold cyan]\n\n"
+        f"[dim italic]{completion}[/dim italic]",
+        title="[bold yellow]🗂️  Processing Complete[/bold yellow]",
         box=box.DOUBLE,
         style="green",
     ))

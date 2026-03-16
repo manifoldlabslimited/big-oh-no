@@ -41,6 +41,7 @@ list occupies stall 0–5, not stall 65.
 """
 
 import itertools
+import random
 import time
 
 import numpy as np
@@ -58,6 +59,37 @@ from .utils import console, make_sort_header
 DEFAULT_AWKWARDNESS = 0.5
 STEP_DELAY = 0.12
 ROUND_DELAY = 0.20
+
+ENTRY_REMARKS_FIRST = [
+    "Walks in, scans the room. Coast is clear.",
+    "First one in. Takes a deep breath. Picks a spot.",
+    "Empty restroom. The dream scenario.",
+    "No one here. Maximum personal space achieved.",
+]
+
+ENTRY_REMARKS_COMFORTABLE = [
+    "Plenty of space. No eye contact needed.",
+    "Acceptable buffer zone. Proceeds with confidence.",
+    "Adequate distance from neighbours. Relaxed.",
+    "Low pressure. Almost comfortable.",
+]
+
+ENTRY_REMARKS_AWKWARD = [
+    "This is... closer than ideal.",
+    "Tries not to make eye contact.",
+    "Stares straight ahead. Intensely.",
+    "Whistles nervously.",
+    "Regrets not waiting.",
+    "The proximity is... noted.",
+]
+
+ENTRY_REMARKS_DIRE = [
+    "Oh no. Oh no no no.",
+    "This violates at least three unwritten rules.",
+    "Maximum discomfort achieved.",
+    "Considers leaving and coming back later.",
+    "The awkwardness is palpable.",
+]
 
 
 class _UrinalSortParams(BaseModel):
@@ -96,13 +128,15 @@ def _choose_slot(size, occupied, awkwardness):
 
 def _render_stalls(stalls, latest_slot=None):
     """Return a Rich-markup stall row string, highlighting the freshly occupied slot."""
-    parts = [
-        "[dim]   [/dim]" if v is None
-        else f"[bold cyan]{v:^3}[/bold cyan]" if i == latest_slot
-        else f"[white]{v:^3}[/white]"
-        for i, v in enumerate(stalls)
-    ]
-    return "│" + "│".join(parts) + "│"
+    parts = []
+    for i, v in enumerate(stalls):
+        if v is None:
+            parts.append("[dim] 🚽 [/dim]")
+        elif i == latest_slot:
+            parts.append(f"[bold cyan]🧍{v:<2}[/bold cyan]")
+        else:
+            parts.append(f"[white]🧍{v:<2}[/white]")
+    return " ".join(parts)
 
 
 def urinal_sort(
@@ -184,14 +218,23 @@ def urinal_sort(
             stall_str = _render_stalls(stalls, latest_slot=slot)
             if chosen_pressure is None:
                 note = "[dim]first in — no neighbours yet[/dim]"
-            else:
+                remark = random.choice(ENTRY_REMARKS_FIRST)
+            elif chosen_pressure < 0.8:
                 note = f"[green]pressure {chosen_pressure:.2f}[/green]"
+                remark = random.choice(ENTRY_REMARKS_COMFORTABLE)
+            elif chosen_pressure < 1.5:
+                note = f"[yellow]pressure {chosen_pressure:.2f}[/yellow]"
+                remark = random.choice(ENTRY_REMARKS_AWKWARD)
+            else:
+                note = f"[red]pressure {chosen_pressure:.2f}[/red]"
+                remark = random.choice(ENTRY_REMARKS_DIRE)
 
             time.sleep(STEP_DELAY)
             console.print(
                 f"  [bold cyan]{value:>4}[/bold cyan] → stall [bold]{slot}[/bold]"
                 f"  {stall_str}  {note}"
             )
+            console.print(f"         [dim italic]{remark}[/dim italic]")
 
         output = list(stalls)
         is_sorted_out = output == target
