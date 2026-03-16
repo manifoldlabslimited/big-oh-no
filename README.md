@@ -37,6 +37,7 @@ big-oh-no wait 5 2 8 1 3          # takes ~8 seconds
 big-oh-no bogo 3 2 1              # shuffles until sorted
 big-oh-no schrodinger 5 3 1 4     # collapses to the worst outcome
 big-oh-no urinal 8 3 6 1 9 2      # personal space first
+big-oh-no digit 170 45 75 90 2 802 66  # bucket bureaucracy, zero comparisons
 ```
 
 ---
@@ -51,6 +52,7 @@ big-oh-no urinal 8 3 6 1 9 2      # personal space first
 | **Bogo Sort** | 🎲 The Gambler | Randomly shuffles until sorted | O((n+1)!) expected time |
 | **Schrödinger Sort** | 🐱 The Quantum Observer | Collapses to least convenient state on observation | O(n log n) · O(∞) regret |
 | **Urinal Sort** | 🚽 The Personal Space Enthusiast | Each person picks the stall furthest from others and closest to a wall; read left→right, repeat until sorted or a cycle is detected | O(rounds × n³) time, O(n) space |
+| **Digit Sort** | 🗂️ The Bucket Bureaucrat | Routes each number to its digit bucket, pass by pass. No comparisons. Just paperwork. | O(d × n) time, 0 comparisons |
 
 ---
 
@@ -364,6 +366,76 @@ big-oh-no urinal --awkwardness 1.0 8 3 6 1 9 2
 
 ---
 
+## 🗂️ Digit Sort
+
+*"I don't rank people. I file them."*
+
+### Inspiration
+
+Before computers could sort data, Herman Hollerith's 1887 tabulating machines processed US census punch cards by sorting them into physical bins — one column at a time. No card was ever compared to another. Each card was simply read at the relevant column and dropped into the corresponding bin. When all bins were collected in order, the data was sorted. It was mechanical, methodical, and deeply bureaucratic.
+
+Digit Sort is that same idea wearing a suit. Every number gets examined one digit at a time, routed to its designated bucket, and collected with all the others when the pass is complete. Nobody asks whether 802 is bigger than 45. That's not how filing works. The routing code is all that matters.
+
+### The persona
+
+The Bucket Bureaucrat runs the Department of Numerical Classification. Their desk is immaculate. Their procedures are documented on Form 7G. They process each number in the order received, examine the relevant digit column, and deposit the number into the appropriate bucket — no more, no less. Comparisons are not within their remit. Comparisons, in fact, are strictly prohibited under Section 4(b).
+
+They will sort your list. They will produce the correct result. They will never once look at two numbers and decide which is bigger. And frankly, they find the idea offensive.
+
+### How it works
+
+1. Find the maximum number in the batch — determine how many digit columns need processing
+2. Starting from the **ones digit**, route each number into bucket 0–9 based solely on that digit
+3. Collect buckets 0 through 9 in order, preserving arrival order within each bucket
+4. Repeat for the **tens**, **hundreds**, **thousands**, … digit columns
+5. After all columns are processed, the list is sorted
+
+**No number is ever compared to any other number.**
+
+### Worked example
+
+```
+Input: [170, 45, 75, 90, 2, 802, 66]
+
+Pass 1 — ones digit:
+  Bucket 0: [170, 90]    (ones digit is 0)
+  Bucket 2: [2, 802]     (ones digit is 2)
+  Bucket 5: [45, 75]     (ones digit is 5)
+  Bucket 6: [66]         (ones digit is 6)
+  → [170, 90, 2, 802, 45, 75, 66]
+
+Pass 2 — tens digit:
+  Bucket 0: [2, 802]     (tens digit is 0)
+  Bucket 4: [45]         (tens digit is 4)
+  Bucket 6: [66]         (tens digit is 6)
+  Bucket 7: [170, 75]    (tens digit is 7)
+  Bucket 9: [90]         (tens digit is 9)
+  → [2, 802, 45, 66, 170, 75, 90]
+
+Pass 3 — hundreds digit:
+  Bucket 0: [2, 45, 66, 75, 90]   (hundreds digit is 0)
+  Bucket 1: [170]                  (hundreds digit is 1)
+  Bucket 8: [802]                  (hundreds digit is 8)
+  → [2, 45, 66, 75, 90, 170, 802]  ✓ Sorted
+```
+
+At no point was "is 170 greater than 45?" ever asked. Each pass just reads a digit and files the number.
+
+**Complexity:**
+- Time: O(d × n) where d = number of digits in the largest value, n = count of elements
+- Space: O(n + 10) — the 10 buckets never grow beyond the input size combined
+- Comparisons: **0**
+
+```bash
+# Sort [170, 45, 75, 90, 2, 802, 66] in 3 passes
+big-oh-no digit 170 45 75 90 2 802 66
+
+# Works with duplicates too
+big-oh-no digit 3 1 4 1 5 9 2 6
+```
+
+---
+
 ## 📊 Implementation Status
 
 | Algorithm | Python | Rust |
@@ -374,6 +446,7 @@ big-oh-no urinal --awkwardness 1.0 8 3 6 1 9 2
 | Bogo Sort | ✅ | 🚧 |
 | Schrödinger Sort | ✅ | 🚧 |
 | Urinal Sort | ✅ | 🚧 |
+| Digit Sort | ✅ | 🚧 |
 
 ---
 
@@ -390,6 +463,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) — adding a new algorithm, improving an 
 - **Linus Sort** — Inspired by Linus Torvalds' legendary code review style on LKML
 - **Bogo Sort** — Inspired by the classic bogosort thought experiment
 - **Schrödinger Sort** — Inspired by the Schrödinger's cat thought experiment
+- **Digit Sort** — Inspired by Herman Hollerith's 1887 tabulating machines and [Radix Sort](https://en.wikipedia.org/wiki/Radix_sort); original suggestion by u/CraigAT on Reddit
 
 
 <p align="center">

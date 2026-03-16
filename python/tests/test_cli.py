@@ -138,6 +138,25 @@ class TestListCommand:
         assert result.exit_code == 0, result.output
 
 
+class TestDigitCommand:
+    def test_valid_input_succeeds(self, runner):
+        result = runner.invoke(cli, ["digit", "170", "45", "75", "90", "2", "802", "66"])
+        assert result.exit_code == 0, result.output
+
+    def test_no_numbers_fails(self, runner):
+        result = runner.invoke(cli, ["digit"])
+        assert result.exit_code != 0
+
+    def test_output_contains_sorted_result(self, runner):
+        result = runner.invoke(cli, ["digit", "3", "1", "2"])
+        assert result.exit_code == 0, result.output
+        assert "[1, 2, 3]" in result.output
+
+    def test_single_number_succeeds(self, runner):
+        result = runner.invoke(cli, ["digit", "42"])
+        assert result.exit_code == 0, result.output
+
+
 class TestRootCommand:
     def test_no_subcommand_succeeds(self, runner):
         result = runner.invoke(cli, [])
