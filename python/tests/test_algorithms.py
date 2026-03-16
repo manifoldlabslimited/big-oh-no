@@ -3,6 +3,7 @@ import pytest
 from pydantic import ValidationError
 
 from big_oh_no import bogo_sort
+from big_oh_no import digit_sort
 from big_oh_no import linus_sort
 from big_oh_no import schrodinger_sort
 from big_oh_no import stalin_sort
@@ -137,3 +138,58 @@ def test_urinal_sort_rejects_out_of_range_awkwardness():
     with pytest.raises(ValidationError) as exc_info:
         urinal_sort.urinal_sort([2, 1], awkwardness=1.2)
     assert "awkwardness" in str(exc_info.value)
+
+
+def test_digit_sort_sorts_correctly():
+    sorted_nums, passes = digit_sort.digit_sort([170, 45, 75, 90, 2, 802, 66])
+
+    assert sorted_nums == [2, 45, 66, 75, 90, 170, 802]
+
+
+def test_digit_sort_returns_correct_number_of_passes():
+    # max value 802 has 3 digits → 3 passes
+    _, passes = digit_sort.digit_sort([170, 45, 75, 90, 2, 802, 66])
+
+    assert len(passes) == 3
+
+
+def test_digit_sort_single_element():
+    sorted_nums, passes = digit_sort.digit_sort([7])
+
+    assert sorted_nums == [7]
+    assert len(passes) == 1
+
+
+def test_digit_sort_already_sorted():
+    sorted_nums, _ = digit_sort.digit_sort([1, 2, 3, 4, 5])
+
+    assert sorted_nums == [1, 2, 3, 4, 5]
+
+
+def test_digit_sort_reverse_order():
+    sorted_nums, _ = digit_sort.digit_sort([9, 8, 7, 6, 5, 4, 3, 2, 1])
+
+    assert sorted_nums == [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+
+def test_digit_sort_with_duplicates():
+    sorted_nums, _ = digit_sort.digit_sort([3, 1, 4, 1, 5, 9, 2, 6, 5])
+
+    assert sorted_nums == [1, 1, 2, 3, 4, 5, 5, 6, 9]
+
+
+def test_digit_sort_pass_buckets_contain_all_numbers():
+    numbers = [170, 45, 75, 90, 2, 802, 66]
+    _, passes = digit_sort.digit_sort(numbers)
+
+    for pos, buckets, collected in passes:
+        # All numbers must appear across all buckets combined each pass
+        flat = [n for b in buckets for n in b]
+        assert sorted(flat) == sorted(numbers)
+
+
+def test_digit_sort_empty_list():
+    sorted_nums, passes = digit_sort.digit_sort([])
+
+    assert sorted_nums == []
+    assert passes == []

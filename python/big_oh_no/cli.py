@@ -92,7 +92,13 @@ def show_algorithms_table():
         "Softmax etiquette utility with adjacency aversion dial",
         "O(rounds × n³) time",
     )
-    
+    table.add_row(
+        "digit",
+        "🔢 The Bucket Bureaucrat",
+        "Distributes numbers into digit buckets, no comparisons made",
+        "O(d × n) time",
+    )
+
     console.print(table)
 
 
@@ -113,6 +119,7 @@ def cli(ctx):
         big-oh-no bogo 3 2 1
         big-oh-no schrodinger 5 3 1 4
         big-oh-no urinal 8 3 6 1 9 2
+        big-oh-no digit 170 45 75 90 2 802 66
     """
     if ctx.invoked_subcommand is None:
         show_banner()
@@ -529,6 +536,73 @@ def urinal(max_rounds, awkwardness, numbers):
     us.console.print()
     us.console.print(us.create_result_panel(original, result, rounds_taken, did_sort))
     us.console.print()
+
+
+@cli.command()
+@click.argument('numbers', nargs=-1, type=int, required=True)
+def digit(numbers):
+    """
+    🔢 Digit Sort - Sorting without a single comparison.
+
+    Distributes numbers into 10 buckets (0–9) based on each digit position,
+    starting from the least-significant digit. Collecting the buckets in order
+    after each pass progressively sorts the list — no comparisons needed.
+
+    \b
+    Examples:
+        big-oh-no digit 170 45 75 90 2 802 66
+        big-oh-no digit 3 1 4 1 5 9 2 6
+    """
+    from . import digit_sort as ds
+
+    nums = parse_numbers(numbers)
+    original = nums.copy()
+
+    ds.console.print()
+    ds.console.print(ds.create_header())
+
+    ds.console.print(Panel(
+        "[bold]How Digit Sort Works:[/bold]\n\n"
+        "• Find the maximum number of digits in the input\n"
+        "• Starting from the [cyan]ones digit[/cyan], place each number into bucket 0–9\n"
+        "• Collect buckets in order (0 → 9) to get the new sequence\n"
+        "• Repeat for the [cyan]tens[/cyan], [cyan]hundreds[/cyan], … digits\n"
+        "• After all digit positions are processed, the list is sorted\n\n"
+        "[bold red]No comparisons are ever made between numbers![/bold red]\n\n"
+        "[dim]Complexity: O(d × n) time · O(n + 10) space · 0 comparisons[/dim]",
+        title="[bold cyan]💡 Algorithm Explanation[/bold cyan]",
+        box=box.ROUNDED,
+        padding=(1, 2),
+    ))
+
+    ds.console.print(f"\n[dim]Numbers:[/dim] [bold cyan]{nums}[/bold cyan]")
+
+    sorted_nums, passes = ds.digit_sort(nums)
+
+    ds.console.print()
+    ds.console.print(Align.center(ds.create_stats_table(original)))
+    ds.console.print()
+
+    for pos, buckets, collected in passes:
+        ds.console.print(Align.center(ds.create_buckets_table(pos, buckets, collected)))
+        ds.console.print(
+            f"  [dim]→ collected:[/dim] [bold]{collected}[/bold]"
+        )
+        ds.console.print()
+
+    ds.console.print(Align.center(ds.create_result_table(original, sorted_nums, passes)))
+    ds.console.print()
+
+    ds.console.print(Panel(
+        f"[bold green]✨ Sorted {len(original)} numbers in {len(passes)} pass(es)![/bold green]\n\n"
+        f"[dim]Original:[/dim] {original}\n"
+        f"[dim]Sorted:[/dim]   [bold cyan]{sorted_nums}[/bold cyan]\n\n"
+        "[dim]Comparisons made: [bold red]0[/bold red][/dim]",
+        title="[bold yellow]🎉 Success![/bold yellow]",
+        box=box.DOUBLE,
+        style="green",
+    ))
+    ds.console.print()
 
 
 def main():
