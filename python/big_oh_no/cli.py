@@ -92,7 +92,13 @@ def show_algorithms_table():
         "Softmax etiquette utility with adjacency aversion dial",
         "O(rounds × n³) time",
     )
-    
+    table.add_row(
+        "digit",
+        "🗂️  The Bucket Bureaucrat",
+        "Routes each number to its digit bucket — no comparisons, just classification",
+        "O(d × n) time",
+    )
+
     console.print(table)
 
 
@@ -113,6 +119,7 @@ def cli(ctx):
         big-oh-no bogo 3 2 1
         big-oh-no schrodinger 5 3 1 4
         big-oh-no urinal 8 3 6 1 9 2
+        big-oh-no digit 170 45 75 90 2 802 66
     """
     if ctx.invoked_subcommand is None:
         show_banner()
@@ -529,6 +536,80 @@ def urinal(max_rounds, awkwardness, numbers):
     us.console.print()
     us.console.print(us.create_result_panel(original, result, rounds_taken, did_sort))
     us.console.print()
+
+
+@cli.command()
+@click.argument('numbers', nargs=-1, type=int, required=True)
+def digit(numbers):
+    """
+    🗂️  Digit Sort - The Bucket Bureaucrat. No comparisons. Ever.
+
+    Each number is routed to its bucket based on its current digit —
+    no value judgements, no comparisons. Just process, file, repeat.
+    The bureaucracy does not rank. It classifies.
+
+    \b
+    Examples:
+        big-oh-no digit 170 45 75 90 2 802 66
+        big-oh-no digit 3 1 4 1 5 9 2 6
+    """
+    import random
+    from . import digit_sort as ds
+
+    nums = parse_numbers(numbers)
+    original = nums.copy()
+
+    ds.console.print()
+    ds.console.print(ds.create_header())
+
+    ds.console.print(Panel(
+        "[bold]📋 Department of Numerical Classification — Operational Directive 7G[/bold]\n\n"
+        "• Determine the number of [cyan]digit columns[/cyan] in the largest submitted value\n"
+        "• For each column, starting with the [cyan]ones digit[/cyan]:\n"
+        "    — Route each number to its [blue]designated bucket[/blue] (0 through 9)\n"
+        "    — The digit is the routing code. The value is [italic]irrelevant[/italic].\n"
+        "    — Collect buckets 0 → 9, preserving arrival order within each bucket\n"
+        "• Repeat for [cyan]tens[/cyan], [cyan]hundreds[/cyan], [cyan]thousands[/cyan], … until all columns processed\n"
+        "• The output is classified. No appeals. No comparisons. No exceptions.\n\n"
+        "[bold red]Comparisons between values are strictly prohibited under Section 4(b).[/bold red]\n\n"
+        "[dim]Complexity: O(d × n) time · O(n + 10) space · 0 comparisons · ∞ paperwork[/dim]",
+        title="[bold cyan]🗂️  Processing Guidelines[/bold cyan]",
+        box=box.ROUNDED,
+        padding=(1, 2),
+    ))
+
+    ds.console.print(f"\n[dim]Batch submitted:[/dim] [bold cyan]{nums}[/bold cyan]")
+
+    sorted_nums, passes = ds.digit_sort(nums)
+
+    ds.console.print()
+    ds.console.print(Align.center(ds.create_stats_table(original)))
+    ds.console.print()
+
+    for pos, buckets, collected in passes:
+        ds.console.print(Align.center(ds.create_buckets_table(pos, buckets)))
+        collection_remark = ds.COLLECTION_REMARKS[pos] if pos < len(ds.COLLECTION_REMARKS) else "Collecting and re-queuing."
+        ds.console.print(
+            f"  [dim]→[/dim] [bold]{collected}[/bold]  "
+            f"[dim italic]({collection_remark})[/dim italic]"
+        )
+        ds.console.print()
+
+    ds.console.print(Align.center(ds.create_result_table(original, sorted_nums, passes)))
+    ds.console.print()
+
+    completion = random.choice(ds.COMPLETION_REMARKS)
+    ds.console.print(Panel(
+        f"[bold green]✅ {len(original)} items classified and filed in {len(passes)} pass(es).[/bold green]\n\n"
+        f"[dim]Submitted batch:[/dim] {original}\n"
+        f"[dim]Approved output:[/dim] [bold cyan]{sorted_nums}[/bold cyan]\n\n"
+        f"[dim italic]{completion}[/dim italic]\n\n"
+        "[dim]Total comparisons made: [bold red]0[/bold red]. The department is proud.[/dim]",
+        title="[bold yellow]🗂️  Processing Complete — Form DS-1 Approved[/bold yellow]",
+        box=box.DOUBLE,
+        style="green",
+    ))
+    ds.console.print()
 
 
 def main():
