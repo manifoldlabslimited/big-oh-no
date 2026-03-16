@@ -99,6 +99,12 @@ def show_algorithms_table():
         "Routes each number to its digit bucket — no comparisons, just classification",
         "O(d × n) time",
     )
+    table.add_row(
+        "darwin",
+        "🧬 The Naturalist",
+        "Evolves permutations through selection, crossover, and mutation",
+        "O(who knows) time",
+    )
 
     console.print(table)
 
@@ -121,6 +127,7 @@ def cli(ctx):
         big-oh-no schrodinger 5 3 1 4
         big-oh-no urinal 8 3 6 1 9 2
         big-oh-no digit 170 45 75 90 2 802 66
+        big-oh-no darwin 5 3 1 4 2
     """
     if ctx.invoked_subcommand is None:
         show_banner()
@@ -537,6 +544,73 @@ def digit(numbers):
         box=box.DOUBLE,
         style="green",
     ))
+    ds.console.print()
+
+
+@cli.command()
+@click.option(
+    "--max-generations",
+    default=500,
+    show_default=True,
+    type=click.IntRange(min=1),
+    help="Maximum generations before the species goes extinct.",
+)
+@click.option(
+    "--population-size",
+    default=50,
+    show_default=True,
+    type=click.IntRange(min=2),
+    help="Number of individuals in each generation.",
+)
+@click.option(
+    "--mutation-rate",
+    default=0.2,
+    show_default=True,
+    type=click.FloatRange(min=0.0, max=1.0),
+    help="Probability of mutating an individual (0.0=stable, 1.0=chaos).",
+)
+@click.option(
+    "--crossover-rate",
+    default=0.7,
+    show_default=True,
+    type=click.FloatRange(min=0.0, max=1.0),
+    help="Probability of crossover between parents (0.0=clones, 1.0=always mix).",
+)
+@click.argument('numbers', nargs=-1, type=int, required=True)
+def darwin(max_generations, population_size, mutation_rate, crossover_rate, numbers):
+    """
+    🧬 Darwin Sort - Survival of the fittest permutation.
+
+    Charles Darwin watches your numbers compete for survival across
+    generations. A population of candidate permutations evolves through
+    selection, crossover, and mutation until the sorted order emerges
+    — or the species goes extinct trying.
+
+    \b
+    Examples:
+        big-oh-no darwin 5 3 1 4 2
+        big-oh-no darwin --max-generations 200 9 1 8 2 7
+        big-oh-no darwin --population-size 100 --mutation-rate 0.5 5 3 1 4 2
+    """
+    from . import darwin_sort as ds
+
+    nums = parse_numbers(numbers)
+    original = nums.copy()
+
+    result, generations, elapsed, converged, logbook = ds.darwin_sort(
+        nums,
+        max_generations=max_generations,
+        population_size=population_size,
+        crossover_prob=crossover_rate,
+        mutation_prob=mutation_rate,
+    )
+
+    ds.console.print()
+    ds.console.print(Align.center(ds.create_result_table(
+        original, result, generations, elapsed, converged, logbook,
+    )))
+    ds.console.print()
+    ds.console.print(ds.create_result_panel(original, result, generations, elapsed, converged))
     ds.console.print()
 
 
