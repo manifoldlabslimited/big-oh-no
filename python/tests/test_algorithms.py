@@ -4,6 +4,7 @@ from pydantic import ValidationError
 
 from big_oh_no import bogo_sort
 from big_oh_no import digit_sort
+from big_oh_no import evolution_sort
 from big_oh_no import linus_sort
 from big_oh_no import schrodinger_sort
 from big_oh_no import stalin_sort
@@ -193,3 +194,66 @@ def test_digit_sort_empty_list():
 
     assert sorted_nums == []
     assert passes == []
+
+
+def test_evolution_sort_returns_sorted_list(monkeypatch):
+    # Patch time.sleep so the animation doesn't slow down the test suite.
+    monkeypatch.setattr(evolution_sort.time, "sleep", lambda _: None)
+
+    result, generations, elapsed, converged = evolution_sort.evolution_sort(
+        [3, 1, 2], max_generations=1000
+    )
+
+    assert result == [1, 2, 3]
+    assert converged is True
+    assert generations >= 1
+
+
+def test_evolution_sort_single_element(monkeypatch):
+    monkeypatch.setattr(evolution_sort.time, "sleep", lambda _: None)
+
+    result, generations, elapsed, converged = evolution_sort.evolution_sort([7])
+
+    assert result == [7]
+    assert converged is True
+    assert generations == 0
+
+
+def test_evolution_sort_already_sorted(monkeypatch):
+    monkeypatch.setattr(evolution_sort.time, "sleep", lambda _: None)
+
+    result, generations, elapsed, converged = evolution_sort.evolution_sort(
+        [1, 2, 3, 4, 5], max_generations=500
+    )
+
+    assert result == [1, 2, 3, 4, 5]
+    assert converged is True
+
+
+def test_evolution_sort_fitness_perfect_when_sorted():
+    assert evolution_sort.fitness([1, 2, 3, 4, 5]) == (1.0,)
+
+
+def test_evolution_sort_fitness_zero_when_reversed():
+    assert evolution_sort.fitness([5, 4, 3, 2, 1]) == (0.0,)
+
+
+def test_evolution_sort_fitness_partial():
+    # [1, 3, 2, 4, 5] → 3 out of 4 pairs correct
+    fit = evolution_sort.fitness([1, 3, 2, 4, 5])
+    assert abs(fit[0] - 0.75) < 1e-9
+
+
+def test_evolution_sort_best_returned_on_timeout(monkeypatch):
+    monkeypatch.setattr(evolution_sort.time, "sleep", lambda _: None)
+
+    # 10 elements → 10! = 3.6M permutations; probability of a 50-individual
+    # population finding the sorted order in 1 generation is negligible (~0.001%).
+    result, generations, elapsed, converged = evolution_sort.evolution_sort(
+        [10, 9, 8, 7, 6, 5, 4, 3, 2, 1], max_generations=1
+    )
+
+    # Result must be a permutation of the input regardless of convergence.
+    assert sorted(result) == list(range(1, 11))
+    assert generations == 1
+    assert converged is False

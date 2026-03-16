@@ -99,6 +99,12 @@ def show_algorithms_table():
         "Routes each number to its digit bucket — no comparisons, just classification",
         "O(d × n) time",
     )
+    table.add_row(
+        "evolution",
+        "🧬 The Natural Selector",
+        "Evolves a population of permutations through selection, crossover, and mutation",
+        "O(who knows) time",
+    )
 
     console.print(table)
 
@@ -121,6 +127,7 @@ def cli(ctx):
         big-oh-no schrodinger 5 3 1 4
         big-oh-no urinal 8 3 6 1 9 2
         big-oh-no digit 170 45 75 90 2 802 66
+        big-oh-no evolution 5 3 1 4 2
     """
     if ctx.invoked_subcommand is None:
         show_banner()
@@ -538,6 +545,62 @@ def digit(numbers):
         style="green",
     ))
     ds.console.print()
+
+
+@cli.command()
+@click.option(
+    "--max-generations",
+    default=500,
+    show_default=True,
+    type=click.IntRange(min=1),
+    help="Maximum generations before the gene pool gives up.",
+)
+@click.argument('numbers', nargs=-1, type=int, required=True)
+def evolution(max_generations, numbers):
+    """
+    🧬 Evolution Sort - Let Darwin do the sorting.
+
+    Evolves a population of candidate permutations through selection,
+    crossover, and mutation until natural selection finds the sorted order
+    — or the generation budget runs out.
+
+    \b
+    Examples:
+        big-oh-no evolution 5 3 1 4 2
+        big-oh-no evolution --max-generations 200 9 1 8 2 7
+    """
+    from . import evolution_sort as es
+
+    nums = parse_numbers(numbers)
+    original = nums.copy()
+
+    es.console.print()
+    es.console.print(es.create_header())
+
+    es.console.print(Panel(
+        "[bold]How Evolution Sort Works:[/bold]\n\n"
+        "• Generate a [cyan]population[/cyan] of random permutations\n"
+        "• Score each by how many adjacent pairs are in order ([green]fitness[/green])\n"
+        "• [magenta]Select[/magenta] fitter individuals as parents\n"
+        "• [yellow]Crossover[/yellow] parent permutations to create offspring\n"
+        "• [red]Mutate[/red] offspring randomly to maintain diversity\n"
+        "• Repeat until sorted or the generation limit is hit\n\n"
+        "[dim]Complexity: O(who knows) time · O(p × n) space · "
+        "100% Darwin-approved[/dim]",
+        title="[bold cyan]💡 Algorithm Explanation[/bold cyan]",
+        box=box.ROUNDED,
+        padding=(1, 2),
+    ))
+
+    es.console.print(f"\n[dim]Numbers:[/dim] [bold cyan]{nums}[/bold cyan]")
+
+    result, generations, elapsed, converged = es.evolution_sort(nums, max_generations=max_generations)
+
+    es.console.print()
+    es.console.print(Align.center(es.create_result_table(original, result, generations, elapsed, converged)))
+    es.console.print()
+    es.console.print(es.create_result_panel(original, result, generations, elapsed, converged))
+    es.console.print()
 
 
 def main():
