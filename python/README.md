@@ -36,6 +36,9 @@ uv run big-oh-no urinal 8 3 6 1 9 2
 uv run big-oh-no urinal --awkwardness 1.0 8 3 6 1 9 2
 uv run big-oh-no digit 170 45 75 90 2 802 66
 uv run big-oh-no digit 3 1 4 1 5 9 2 6
+uv run big-oh-no darwin 5 3 1 4 2
+uv run big-oh-no darwin --max-generations 200 9 1 8 2 7
+uv run big-oh-no darwin --population-size 100 --mutation-rate 0.5 5 3 1 4 2
 ```
 
 If you see a `VIRTUAL_ENV ... does not match the project environment path` warning, another virtualenv is active in your shell. It is safe to ignore, or run `deactivate` before `uv` commands.

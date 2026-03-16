@@ -161,3 +161,41 @@ class TestRootCommand:
     def test_no_subcommand_succeeds(self, runner):
         result = runner.invoke(cli, [])
         assert result.exit_code == 0, result.output
+
+
+class TestDarwinCommand:
+    def test_valid_input_succeeds(self, runner):
+        result = runner.invoke(cli, ["darwin", "3", "1", "2"])
+        assert result.exit_code == 0, result.output
+
+    def test_no_numbers_fails(self, runner):
+        result = runner.invoke(cli, ["darwin"])
+        assert result.exit_code != 0
+
+    def test_max_generations_option_succeeds(self, runner):
+        result = runner.invoke(cli, ["darwin", "--max-generations", "50", "2", "1"])
+        assert result.exit_code == 0, result.output
+
+    def test_max_generations_zero_fails_validation(self, runner):
+        result = runner.invoke(cli, ["darwin", "--max-generations", "0", "2", "1"])
+        assert result.exit_code != 0
+
+    def test_population_size_option_succeeds(self, runner):
+        result = runner.invoke(cli, ["darwin", "--population-size", "20", "3", "1", "2"])
+        assert result.exit_code == 0, result.output
+
+    def test_population_size_one_fails_validation(self, runner):
+        result = runner.invoke(cli, ["darwin", "--population-size", "1", "3", "1", "2"])
+        assert result.exit_code != 0
+
+    def test_mutation_rate_option_succeeds(self, runner):
+        result = runner.invoke(cli, ["darwin", "--mutation-rate", "0.5", "3", "1", "2"])
+        assert result.exit_code == 0, result.output
+
+    def test_mutation_rate_out_of_range_fails(self, runner):
+        result = runner.invoke(cli, ["darwin", "--mutation-rate", "1.5", "3", "1", "2"])
+        assert result.exit_code != 0
+
+    def test_crossover_rate_option_succeeds(self, runner):
+        result = runner.invoke(cli, ["darwin", "--crossover-rate", "0.9", "3", "1", "2"])
+        assert result.exit_code == 0, result.output

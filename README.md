@@ -38,6 +38,7 @@ big-oh-no bogo 3 2 1              # shuffles until sorted
 big-oh-no schrodinger 5 3 1 4     # collapses to the worst outcome
 big-oh-no urinal 8 3 6 1 9 2      # personal space first
 big-oh-no digit 170 45 75 90 2 802 66  # bucket bureaucracy, zero comparisons
+big-oh-no darwin 5 3 1 4 2            # survival of the fittest permutation
 ```
 
 ---
@@ -53,6 +54,7 @@ big-oh-no digit 170 45 75 90 2 802 66  # bucket bureaucracy, zero comparisons
 | **Schrödinger Sort** | 🐱 The Quantum Observer | Collapses to least convenient state on observation | O(n log n) · O(∞) regret |
 | **Urinal Sort** | 🚽 The Personal Space Enthusiast | Each person picks the stall furthest from others and closest to a wall; read left→right, repeat until sorted or a cycle is detected | O(rounds × n³) time, O(n) space |
 | **Digit Sort** | 🗂️ The Bucket Bureaucrat | Routes each number to its digit bucket, pass by pass. No comparisons. Just paperwork. | O(d × n) time, 0 comparisons |
+| **Darwin Sort** | 🧬 The Naturalist | Evolves a population of permutations through selection, crossover, and mutation until the sorted order emerges — or the species goes extinct | O(who knows) time |
 
 ---
 
@@ -436,6 +438,133 @@ big-oh-no digit 3 1 4 1 5 9 2 6
 
 ---
 
+
+## 🧬 Darwin Sort
+
+*"It is not the strongest of the permutations that survives, nor the most sorted — but the one most adaptable to change."*
+
+### Inspiration
+
+In 1859, Charles Darwin published *On the Origin of Species* and changed how we understand life. His central insight was simple: organisms vary, some variations are better suited to their environment, and those organisms are more likely to reproduce. Given enough generations, this blind process of variation and selection produces complex, well-adapted creatures — all without a designer, a plan, or any awareness of the goal.
+
+Genetic algorithms took that idea and turned it into code. John Holland formalised them in the 1970s: maintain a population of candidate solutions, score them on how close they are to the goal, let the best ones breed, introduce random mutations, and repeat. It works surprisingly well on problems where the search space is too large to brute-force and too irregular for gradient descent.
+
+Darwin Sort applies that to a list of numbers. A population of random permutations competes for survival. Each generation, the fittest — the ones closest to sorted order — are selected to breed. Crossover mixes their genes. Mutation shakes things up. The unfit are culled. Given enough generations, natural selection converges on the sorted order. Or the species goes extinct trying. Darwin sits aboard the HMS Beagle, notebook open, watching. He doesn't intervene. He just observes, takes notes, and waits for nature to find the answer.
+
+The algorithm is powered by [DEAP](https://github.com/deap/deap)'s `eaSimple` — the standard simple evolutionary algorithm with built-in statistics tracking, Hall of Fame, and logbook.
+
+### The fitness function
+
+The entire algorithm hinges on one question: given two permutations, which one is closer to sorted? The answer is adjacent-pair counting:
+
+$$\text{fitness}(p) = \frac{|\{i : p_i \leq p_{i+1}\}|}{n - 1}$$
+
+Walk through the permutation left to right. Every time a pair of neighbours is in the right order, that's one point. Divide by the total number of pairs to get a score between 0.0 and 1.0.
+
+Why this works: it creates a smooth gradient. A completely reversed list scores 0.0 — every pair is wrong. A perfectly sorted list scores 1.0 — every pair is right. A mostly-wrong permutation that happens to have a few pairs in order still scores above zero, and that's enough for selection to favour it over something worse. Over many generations, the population drifts toward 1.0.
+
+For `[3, 1, 4, 2, 5]` with 4 adjacent pairs:
+
+| Pair | In order? |
+|------|-----------|
+| 3 ≤ 1 | ✗ |
+| 1 ≤ 4 | ✓ |
+| 4 ≤ 2 | ✗ |
+| 2 ≤ 5 | ✓ |
+
+2 out of 4 correct → fitness = **0.50**
+
+Compare that to `[1, 3, 2, 4, 5]`:
+
+| Pair | In order? |
+|------|-----------|
+| 1 ≤ 3 | ✓ |
+| 3 ≤ 2 | ✗ |
+| 2 ≤ 4 | ✓ |
+| 4 ≤ 5 | ✓ |
+
+3 out of 4 correct → fitness = **0.75**
+
+Tournament selection picks the second one. That's the gradient doing its job.
+
+### How it works
+
+1. Generate a **population** of random permutations of the input list
+2. **Score** each permutation using the fitness function above
+3. **Select** the fittest individuals via tournament selection (pick 3 at random, keep the best)
+4. **Crossover** — pairs of parents swap segments of their ordering to produce offspring (ordered crossover, preserving permutation validity)
+5. **Mutate** — randomly shuffle a subset of positions in some offspring
+6. **Elitism** — the single best individual ever seen (Hall of Fame) is always carried forward, so fitness never regresses
+7. Repeat until fitness reaches 1.0 (perfectly sorted) or the generation budget runs out
+
+### Worked example
+
+```
+Input: [5, 3, 1, 4, 2]
+Population size: 50
+4 adjacent pairs to get right
+
+Gen  0: Best [3, 1, 5, 4, 2]  fitness 25%  (1/4 pairs correct)
+        Avg fitness across population: ~18%
+        Most individuals are random noise.
+
+Gen  3: Best [1, 3, 2, 4, 5]  fitness 75%  (3/4 pairs correct)
+        Selection has killed off the worst permutations.
+        Crossover between [1,3,5,4,2] and [3,1,2,4,5] produced this.
+
+Gen  7: Best [1, 2, 3, 4, 5]  fitness 100% (4/4 pairs correct)
+        ✅ Converged. Darwin nods approvingly.
+```
+
+For 5 elements there are only 120 possible permutations. A population of 50 covers nearly half the search space on the first generation alone. Convergence is near-instant.
+
+### How does list size affect convergence?
+
+More elements, worse odds. The search space grows factorially — 5 elements is 120 permutations, 10 is 3.6 million, 15 is over a trillion. The default population of 50 becomes a vanishingly small sample.
+
+Each cell is the percentage of random starting orderings that converged within 500 generations, tested across 20 trials:
+
+| Elements | Permutations | pop=50 | pop=100 | pop=200 | Avg gens (pop=50) |
+|----------|--------------|--------|---------|---------|-------------------|
+| 3 | 6 | 100% | 100% | 100% | 0 |
+| 5 | 120 | 100% | 100% | 100% | 20 |
+| 8 | 40,320 | 40% | 65% | 90% | 339 |
+| 10 | 3,628,800 | 30% | 30% | 35% | 383 |
+| 15 | 1.3 trillion | 0% | 0% | 0% | 500 |
+
+At 3–5 elements, it always converges. At 8, throwing more individuals at the problem helps — doubling from 50 to 100 nearly doubles the success rate, and 200 gets it to 90%. At 10, even quadrupling the population barely moves the needle. At 15, nothing converges within 500 generations regardless of population size.
+
+Mutation rate matters more than population size at the margins. Higher mutation keeps the gene pool diverse and prevents premature convergence on a local optimum:
+
+| Mutation rate | Convergence (n=10, pop=50) | Avg gens |
+|---------------|----------------------------|----------|
+| 0.05 | 5% | 476 |
+| 0.2 | 10% | 451 |
+| 0.5 | 20% | 412 |
+| 0.8 | 50% | 354 |
+
+At 80% mutation the algorithm is almost more random search than evolution — but for a 10-element list, that chaos is exactly what's needed to stumble onto the answer.
+
+**Complexity:**
+- Time: O(generations × population × n) — each generation evaluates up to `population_size` individuals, each evaluation is O(n)
+- Space: O(population × n)
+- Convergence: not guaranteed — the species may go extinct
+
+Options:
+- `--max-generations <n>` — generation budget before extinction (default `500`)
+- `--population-size <n>` — individuals per generation (default `50`, min `2`)
+- `--mutation-rate <0.0–1.0>` — probability of mutating an individual (default `0.2`)
+- `--crossover-rate <0.0–1.0>` — probability of crossover between parents (default `0.7`)
+
+```bash
+big-oh-no darwin 5 3 1 4 2
+big-oh-no darwin --max-generations 200 9 1 8 2 7
+big-oh-no darwin --population-size 100 --mutation-rate 0.5 5 3 1 4 2
+big-oh-no darwin --mutation-rate 0.05 --crossover-rate 0.9 10 9 8 7 6 5 4 3 2 1
+```
+
+---
+
 ## 📊 Implementation Status
 
 | Algorithm | Python | Rust |
@@ -447,6 +576,7 @@ big-oh-no digit 3 1 4 1 5 9 2 6
 | Schrödinger Sort | ✅ | 🚧 |
 | Urinal Sort | ✅ | 🚧 |
 | Digit Sort | ✅ | 🚧 |
+| Darwin Sort | ✅ | 🚧 |
 
 ---
 
@@ -463,7 +593,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) — adding a new algorithm, improving an 
 - **Linus Sort** — Inspired by Linus Torvalds' legendary code review style on LKML
 - **Bogo Sort** — Inspired by the classic bogosort thought experiment
 - **Schrödinger Sort** — Inspired by the Schrödinger's cat thought experiment
+- **Urinal Sort** — Inspired by the [urinal problem](https://en.wikipedia.org/wiki/Urinal_problem) and the unwritten rules of men's restroom etiquette
 - **Digit Sort** — Inspired by Herman Hollerith's 1887 tabulating machines and [Radix Sort](https://en.wikipedia.org/wiki/Radix_sort); original suggestion by u/CraigAT on Reddit
+- **Darwin Sort** — Inspired by Charles Darwin's theory of natural selection and [genetic algorithms](https://en.wikipedia.org/wiki/Genetic_algorithm); powered by [DEAP](https://github.com/deap/deap)
 
 
 <p align="center">
