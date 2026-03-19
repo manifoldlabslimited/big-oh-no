@@ -103,7 +103,13 @@ def show_algorithms_table():
         "darwin",
         "🧬 The Naturalist",
         "Evolves permutations through selection, crossover, and mutation",
-        "O(who knows) time",
+        "O(generations × population × n) time",
+    )
+    table.add_row(
+        "vibe",
+        "🫠 The Vibe Checker",
+        "Asks an AI to sort by vibes. --pro exec's AI-generated code.",
+        "O(vibes)",
     )
 
     console.print(table)
@@ -128,6 +134,8 @@ def cli(ctx):
         big-oh-no urinal 8 3 6 1 9 2
         big-oh-no digit 170 45 75 90 2 802 66
         big-oh-no darwin 5 3 1 4 2
+        big-oh-no vibe 5 3 1 4 2
+        big-oh-no vibe --pro 5 3 1 4 2
     """
     if ctx.invoked_subcommand is None:
         show_banner()
@@ -612,6 +620,113 @@ def darwin(max_generations, population_size, mutation_rate, crossover_rate, numb
     ds.console.print()
     ds.console.print(ds.create_result_panel(original, result, generations, elapsed, converged))
     ds.console.print()
+
+@cli.command()
+@click.option("--pro", is_flag=True, default=False, help="Ask the AI to write sorting code, then exec it. Peak vibe coding.")
+@click.argument("numbers", nargs=-1, required=True, type=int)
+def vibe(pro, numbers):
+    """
+    🫠 Vibe Sort - Why think when you can just feel it?
+
+    Sends the list to an AI agent and asks it to sort by vibes.
+    The algorithm doesn't compare. It doesn't compute. It just feels
+    the correct order and ships it.
+
+    No API key? No vibes. Shuffles randomly and calls it intuition.
+
+    Use --pro for a coding agent that writes and runs a sorting function. Like a pro.
+
+    \b
+    Examples:
+        big-oh-no vibe 5 3 1 4 2
+        big-oh-no vibe --pro 5 3 1 4 2
+    """
+    import random
+    from rich.syntax import Syntax
+    from . import vibe_sort as vs
+
+    nums = parse_numbers(numbers)
+    original = nums.copy()
+
+    vs.console.print()
+    vs.console.print(vs.create_header())
+
+    # ── Interactive model selection ──────────────────────────────────────
+    MODEL_CHOICES = {
+        "1": ("openai:gpt-5-mini", "GPT-5 Mini"),
+        "2": ("anthropic:claude-sonnet-4-6", "Claude Sonnet 4.6"),
+        "3": ("anthropic:claude-sonnet-4-5", "Claude Sonnet 4.5"),
+        "4": (None, "No model — just vibes"),
+    }
+
+    vs.console.print(Panel(
+        "\n".join(
+            f"  [bold cyan]{k}[/bold cyan]) {label}" for k, (_, label) in MODEL_CHOICES.items()
+        ),
+        title="[bold yellow]🫠 Pick your vibe source (or don't)[/bold yellow]",
+        box=box.ROUNDED,
+        padding=(1, 2),
+    ))
+
+    choice = click.prompt("Choose", type=click.Choice(list(MODEL_CHOICES)), default="4")
+    model, label = MODEL_CHOICES[choice]
+
+    api_key = None
+    if model is not None:
+        api_key = click.prompt("API key", hide_input=True)
+
+    mode_label = "PRO (coding agent)" if pro and model is not None else label
+    vs.console.print()
+    vs.console.print(Panel(
+        "[bold]How Vibe Sort Works:[/bold]\n\n"
+        + (
+            "• A [bold red]coding agent[/bold red] writes a sorting function\n"
+            "• Then executes it. Like a pro.\n"
+            "• [magenta]The generated code gets displayed. Don't read it.[/magenta]\n"
+            "• If it works, it was meant to be.\n\n"
+            if pro and model is not None else
+            "• Send the list to an agent. Ask it to sort by vibes.\n"
+            "• The agent doesn't compare. It [magenta]feels[/magenta] the order.\n"
+            "• Ship it before anyone applies logic.\n\n"
+        )
+        + f"[dim]Model: {mode_label} · Complexity: O(vibes)[/dim]",
+        title="[bold cyan]💡 Algorithm Explanation[/bold cyan]",
+        box=box.ROUNDED,
+        padding=(1, 2),
+    ))
+
+    vs.console.print(f"\n[dim]Numbers:[/dim] [bold cyan]{nums}[/bold cyan]")
+    vs.console.print(f"[dim italic]\"{random.choice(vs.VIBE_REMARKS)}\"[/dim italic]\n")
+
+    vs.animate_vibe(is_offline=api_key is None, is_pro=pro and api_key is not None)
+
+    result, explanation, elapsed, model_used, generated_code = vs.vibe_sort(
+        nums,
+        model=model or vs.DEFAULT_MODEL,
+        api_key=api_key,
+        pro=pro and api_key is not None,
+    )
+
+    if model_used == "offline-vibes" and model is not None:
+        vs.console.print("[bold yellow]⚠️  AI call failed. Falling back to unguided vibes.[/bold yellow]\n")
+
+    if generated_code is not None:
+        vs.console.print(Panel(
+            Syntax(generated_code, "python", theme="monokai", line_numbers=True),
+            title="[bold red]🔥 AI-Generated Code (written and executed by a coding agent)[/bold red]",
+            box=box.DOUBLE,
+            style="red",
+        ))
+        vs.console.print()
+
+    vs.console.print()
+    vs.console.print(Align.center(vs.create_result_table(
+        original, result, explanation, elapsed, model_used, generated_code,
+    )))
+    vs.console.print()
+    vs.console.print(vs.create_result_panel(original, result, explanation, elapsed))
+    vs.console.print()
+
 
 
 def main():
