@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.4.0 (2026-03-19)
+
+### Features
+
+- Update vibe sort — pydantic-ai CodeExecutionTool, model upgrades, README & CLI refresh
+  ([`808ee59`](https://github.com/manifoldlabslimited/big-oh-no/commit/808ee595e488dd21ef5fc9f0396a7b2a7035ee47))
+
+
 ## v1.3.0 (2026-03-16)
 
 ### Bug Fixes
