@@ -1,11 +1,13 @@
 import numpy as np
 import pytest
 from pydantic import ValidationError
+from unittest.mock import patch, MagicMock
 
 from big_oh_no import bogo_sort
 from big_oh_no import digit_sort
 from big_oh_no import darwin_sort
 from big_oh_no import linus_sort
+from big_oh_no import vibe_sort
 from big_oh_no import schrodinger_sort
 from big_oh_no import stalin_sort
 from big_oh_no import urinal_sort
@@ -271,3 +273,93 @@ def test_darwin_sort_rejects_invalid_params(monkeypatch):
 
     with pytest.raises(ValidationError):
         darwin_sort.darwin_sort([3, 1, 2], mutation_prob=-0.1)
+
+
+# ── Vibe Sort ────────────────────────────────────────────────────────────────
+
+def test_vibe_sort_no_api_key_returns_offline_vibes():
+    """No API key → immediate offline vibes, no LLM call attempted."""
+    result, explanation, elapsed, model_used, code = vibe_sort.vibe_sort([3, 1, 2])
+
+    assert sorted(result) == [1, 2, 3]
+    assert model_used == "offline-vibes"
+    assert explanation in vibe_sort.OFFLINE_EXCUSES
+    assert code is None
+
+
+def test_vibe_sort_with_llm(monkeypatch):
+    """When API key is provided and LLM works, returns LLM result."""
+    monkeypatch.setattr(
+        vibe_sort, "_llm_sort",
+        lambda nums, model, key: ([1, 2, 3], "I felt the order."),
+    )
+    result, explanation, elapsed, model_used, code = vibe_sort.vibe_sort(
+        [3, 1, 2], api_key="sk-test",
+    )
+
+    assert result == [1, 2, 3]
+    assert explanation == "I felt the order."
+    assert model_used == vibe_sort.DEFAULT_MODEL
+    assert code is None
+
+
+def test_vibe_sort_bad_api_key_falls_back(monkeypatch):
+    """Bad API key → LLM throws → graceful fallback to offline vibes."""
+    monkeypatch.setattr(
+        vibe_sort, "_llm_sort",
+        MagicMock(side_effect=Exception("401 Unauthorized")),
+    )
+    result, explanation, elapsed, model_used, code = vibe_sort.vibe_sort(
+        [3, 1, 2], api_key="sk-garbage",
+    )
+
+    assert sorted(result) == [1, 2, 3]
+    assert model_used == "offline-vibes"
+    assert explanation in vibe_sort.OFFLINE_EXCUSES
+    assert code is None
+
+
+def test_vibe_sort_single_element_offline():
+    result, _, _, _, _ = vibe_sort.vibe_sort([7])
+    assert result == [7]
+
+
+def test_vibe_sort_pro_mode(monkeypatch):
+    """--pro mode: LLM returns code, exec'd to sort."""
+    fake_code = "def sort_numbers(lst):\n    return sorted(lst)\n"
+    monkeypatch.setattr(
+        vibe_sort, "_pro_sort",
+        lambda nums, model, key: ([1, 2, 3], "Vibed a function into existence.", fake_code),
+    )
+    result, explanation, elapsed, model_used, code = vibe_sort.vibe_sort(
+        [3, 1, 2], api_key="sk-test", pro=True,
+    )
+
+    assert result == [1, 2, 3]
+    assert code == fake_code
+    assert model_used == vibe_sort.DEFAULT_MODEL
+
+
+def test_vibe_sort_pro_mode_falls_back(monkeypatch):
+    """--pro mode: LLM fails → graceful fallback to offline vibes."""
+    monkeypatch.setattr(
+        vibe_sort, "_pro_sort",
+        MagicMock(side_effect=Exception("code was garbage")),
+    )
+    result, explanation, elapsed, model_used, code = vibe_sort.vibe_sort(
+        [3, 1, 2], api_key="sk-test", pro=True,
+    )
+
+    assert sorted(result) == [1, 2, 3]
+    assert model_used == "offline-vibes"
+    assert code is None
+
+
+def test_vibe_sort_result_panel_correct():
+    panel = vibe_sort.create_result_panel([3, 1, 2], [1, 2, 3], "Vibes aligned.", 0.5)
+    assert panel is not None
+
+
+def test_vibe_sort_result_panel_incorrect():
+    panel = vibe_sort.create_result_panel([3, 1, 2], [3, 2, 1], "Bad vibes.", 0.5)
+    assert panel is not None

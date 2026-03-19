@@ -39,6 +39,7 @@ big-oh-no schrodinger 5 3 1 4     # collapses to the worst outcome
 big-oh-no urinal 8 3 6 1 9 2      # personal space first
 big-oh-no digit 170 45 75 90 2 802 66  # bucket bureaucracy, zero comparisons
 big-oh-no darwin 5 3 1 4 2            # survival of the fittest permutation
+big-oh-no vibe 5 3 1 4 2              # asks an AI to sort by vibes
 ```
 
 ---
@@ -55,6 +56,7 @@ big-oh-no darwin 5 3 1 4 2            # survival of the fittest permutation
 | **Urinal Sort** | 🚽 The Personal Space Enthusiast | Each person picks the stall furthest from others and closest to a wall; read left→right, repeat until sorted or a cycle is detected | O(rounds × n³) time, O(n) space |
 | **Digit Sort** | 🗂️ The Bucket Bureaucrat | Routes each number to its digit bucket, pass by pass. No comparisons. Just paperwork. | O(d × n) time, 0 comparisons |
 | **Darwin Sort** | 🧬 The Naturalist | Evolves a population of permutations through selection, crossover, and mutation until the sorted order emerges — or the species goes extinct | O(generations × population × n) time |
+| **Vibe Sort** | 🫠 The Vibe Checker | Asks an AI to sort by vibes. `--pro` asks the AI to write code, then exec's it. | O(vibes) |
 
 ---
 
@@ -565,6 +567,33 @@ big-oh-no darwin --mutation-rate 0.05 --crossover-rate 0.9 10 9 8 7 6 5 4 3 2 1
 
 ---
 
+## 🫠 Vibe Sort
+
+*"Why think when you can just feel it?"*
+
+### Inspiration
+
+Around 2023, a lot of us quietly stopped writing code. Need a feature? Describe it in a chat window. Need a fix? Paste the stack trace and hit enter. Let coding agent do it, and if the tests pass — or if there aren't any — ship it. The part where we'd sit with a problem, trace through the logic, learn something about how systems work — that part just kind of disappeared. We traded it for speed. We've all done it. Some of us are doing it right now.
+
+Vibe Sort takes that workflow and applies it to sorting. The list is sent to an AI agent. The agent returns what it thinks the sorted order is, along with a one-sentence explanation written as though it sorted by feeling rather than computation. `--pro` takes it further: we don't just have any agent — no sir — we have a coding agent that writes a sorting function and then executes it. Like a pro. If there's no API key — because we forgot, or never had one, or don't believe in paying for things — the algorithm panics, shuffles the list randomly, and picks an excuse from a curated list of coping mechanisms.
+
+### How it works
+
+1. Pick a model from the menu or pick "No model — just vibes."
+2. If a model was picked, enter an API key.
+3. The list is sent to the agent. In `--pro` mode, a coding agent writes a sorting function and executes it instead.
+4. If the call succeeds, the sorted list and the agent's explanation are displayed. In `--pro` mode, the generated code is shown too.
+5. If anything goes wrong — bad key, network error, the agent hallucinates a poem instead of a list — the algorithm falls back to offline vibes: a random shuffle and a random excuse.
+6. If "No model" was picked, step 5 happens immediately.
+
+```bash
+# Interactive model selection
+big-oh-no vibe 5 3 1 4 2
+
+# Pro mode — agent writes and runs sorting code
+big-oh-no vibe --pro 5 3 1 4 2
+```
+
 ## 📊 Implementation Status
 
 | Algorithm | Python | Rust |
@@ -577,6 +606,7 @@ big-oh-no darwin --mutation-rate 0.05 --crossover-rate 0.9 10 9 8 7 6 5 4 3 2 1
 | Urinal Sort | ✅ | 🚧 |
 | Digit Sort | ✅ | 🚧 |
 | Darwin Sort | ✅ | 🚧 |
+| Vibe Sort | ✅ | 🚧 |
 
 ---
 
@@ -596,6 +626,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) — adding a new algorithm, improving an 
 - **Urinal Sort** — Inspired by the [urinal problem](https://en.wikipedia.org/wiki/Urinal_problem) and the unwritten rules of men's restroom etiquette
 - **Digit Sort** — Inspired by Herman Hollerith's 1887 tabulating machines and [Radix Sort](https://en.wikipedia.org/wiki/Radix_sort); original suggestion by u/CraigAT on Reddit
 - **Darwin Sort** — Inspired by Charles Darwin's theory of natural selection and [genetic algorithms](https://en.wikipedia.org/wiki/Genetic_algorithm); powered by [DEAP](https://github.com/deap/deap)
+- **Vibe Sort** — Inspired by the mass adoption of AI-assisted development and the mass abandonment of understanding what the code does; powered by [pydantic-ai](https://github.com/pydantic/pydantic-ai)
 
 
 <p align="center">
