@@ -28,6 +28,12 @@ Some lose data. Some take forever. All are completely impractical. **But they're
 pip install big-oh-no
 ```
 
+Some algorithms support animated bar-chart visualizations with sound. The bars move, the tones chirp, eliminations drop an octave, and the final sorted state plays a little ascending sweep.
+
+```bash
+pip install big-oh-no[viz]
+```
+
 ## ▶️ Run
 
 ```bash
@@ -46,17 +52,17 @@ big-oh-no vibe 5 3 1 4 2              # asks an AI to sort by vibes
 
 ## 🎭 Algorithms
 
-| Algorithm | Persona | Method | Complexity |
-|-----------|---------|--------|------------|
-| **Wait Sort** | ⏳ The Patient One | Each number waits (value) seconds in a thread | O(max(n)) time |
-| **Stalin Sort** | ☭ The Authoritarian | Eliminates any element smaller than the current max | O(n) time, O(n) casualties |
-| **Linus Sort** | 🐧 The Code Reviewer | NAKs patches that break monotonic order | O(n) time, O(n) hurt feelings |
-| **Bogo Sort** | 🎲 The Gambler | Randomly shuffles until sorted | O((n+1)!) expected time |
-| **Schrödinger Sort** | 🐱 The Quantum Observer | Collapses to least convenient state on observation | O(n log n) · O(∞) regret |
-| **Urinal Sort** | 🚽 The Personal Space Enthusiast | Each person picks the stall furthest from others and closest to a wall; read left→right, repeat until sorted or a cycle is detected | O(rounds × n³) time, O(n) space |
-| **Digit Sort** | 🗂️ The Bucket Bureaucrat | Routes each number to its digit bucket, pass by pass. No comparisons. Just paperwork. | O(d × n) time, 0 comparisons |
-| **Darwin Sort** | 🧬 The Naturalist | Evolves a population of permutations through selection, crossover, and mutation until the sorted order emerges — or the species goes extinct | O(generations × population × n) time |
-| **Vibe Sort** | 🫠 The Vibe Checker | Asks an AI to sort by vibes. `--pro` asks the AI to write code, then exec's it. | O(vibes) |
+| Algorithm | Persona | Method | Complexity | `-v` | Sound |
+|-----------|---------|--------|------------|:----:|:-----:|
+| **Wait Sort** | ⏳ The Patient One | Each number waits (value) seconds in a thread | O(max(n)) time | | |
+| **Stalin Sort** | ☭ The Authoritarian | Eliminates any element smaller than the current max | O(n) time, O(n) casualties | ✅ | ✅ |
+| **Linus Sort** | 🐧 The Code Reviewer | NAKs patches that break monotonic order | O(n) time, O(n) hurt feelings | | |
+| **Bogo Sort** | 🎲 The Gambler | Randomly shuffles until sorted | O((n+1)!) expected time | | |
+| **Schrödinger Sort** | 🐱 The Quantum Observer | Collapses to least convenient state on observation | O(n log n) · O(∞) regret | | |
+| **Urinal Sort** | 🚽 The Personal Space Enthusiast | Each person picks the stall furthest from others and closest to a wall; read left→right, repeat until sorted or a cycle is detected | O(rounds × n³) time, O(n) space | | |
+| **Digit Sort** | 🗂️ The Bucket Bureaucrat | Routes each number to its digit bucket, pass by pass. No comparisons. Just paperwork. | O(d × n) time, 0 comparisons | | |
+| **Darwin Sort** | 🧬 The Naturalist | Evolves a population of permutations through selection, crossover, and mutation until the sorted order emerges — or the species goes extinct | O(generations × population × n) time | ✅ | ✅ |
+| **Vibe Sort** | 🫠 The Vibe Checker | Asks an AI to sort by vibes. `--pro` asks the AI to write code, then exec's it. | O(vibes) | | |
 
 ---
 
@@ -248,7 +254,7 @@ That's Urinal Sort.
 
 Each person sizes up every empty stall and picks the best one — furthest from others, closest to a wall, least exposed. That intuition collapses into a single utility score:
 
-$$U(s) = \underbrace{\frac{1}{s+1} + \frac{1}{n-s}}_{\text{wall attraction}} - \underbrace{\alpha \sum_{j \in J} \frac{1}{|s-j|}}_{\text{neighbour repulsion}}$$
+$U(s) = \underbrace{\frac{1}{s+1} + \frac{1}{n-s}}_{\text{wall attraction}} - \underbrace{\alpha \sum_{j \in J} \frac{1}{|s-j|}}_{\text{neighbour repulsion}}$
 
 **Wall attraction** — the left wall is one step beyond stall 0 (distance $s+1$); the right wall is one step beyond stall $n-1$ (distance $n-s$). Inverse distance: the nearer you are to a wall, the more it pulls. This is why the first person always heads for a corner — no neighbours yet, so wall pull is all that matters.
 
@@ -441,6 +447,7 @@ big-oh-no digit 3 1 4 1 5 9 2 6
 ---
 
 
+
 ## 🧬 Darwin Sort
 
 *"It is not the strongest of the permutations that survives, nor the most sorted — but the one most adaptable to change."*
@@ -451,122 +458,116 @@ In 1859, Charles Darwin published *On the Origin of Species* and changed how we 
 
 Genetic algorithms took that idea and turned it into code. John Holland formalised them in the 1970s: maintain a population of candidate solutions, score them on how close they are to the goal, let the best ones breed, introduce random mutations, and repeat. It works surprisingly well on problems where the search space is too large to brute-force and too irregular for gradient descent.
 
-Darwin Sort applies that to a list of numbers. A population of random permutations competes for survival. Each generation, the fittest — the ones closest to sorted order — are selected to breed. Crossover mixes their genes. Mutation shakes things up. The unfit are culled. Given enough generations, natural selection converges on the sorted order. Or the species goes extinct trying. Darwin sits aboard the HMS Beagle, notebook open, watching. He doesn't intervene. He just observes, takes notes, and waits for nature to find the answer.
+Darwin Sort applies that to a list of numbers. A population of random permutations competes for survival. Each generation, the fittest are selected to breed. Crossover mixes their genes. Mutation shakes things up. The unfit are culled. Given enough generations, natural selection converges on the sorted order. Or the species goes extinct trying.
 
-The algorithm is powered by [DEAP](https://github.com/deap/deap)'s `eaSimple` — the standard simple evolutionary algorithm with built-in statistics tracking, Hall of Fame, and logbook.
+Darwin sits aboard the HMS Beagle, notebook open, watching. He doesn't intervene. He just observes, takes notes, and waits for nature to find the answer. Under the hood, [DEAP](https://github.com/deap/deap) runs the actual evolution — tournament selection, ordered crossover, index-shuffle mutation, and a mu+lambda survival strategy that pits parents against their own offspring every generation.
 
-### The fitness function
+### Measuring fitness
 
-The entire algorithm hinges on one question: given two permutations, which one is closer to sorted? The answer is adjacent-pair counting:
+Every generation, Darwin opens his notebook and asks: how close is this permutation to sorted? The answer is an inversion count — the Kendall tau distance.
 
-$$\text{fitness}(p) = \frac{|\{i : p_i \leq p_{i+1}\}|}{n - 1}$$
+Walk through every pair of elements. If the left one is bigger than the right one, that's an inversion — two elements in the wrong relative order. Count them all, divide by the worst case ($n(n-1)/2$, a fully reversed list), subtract from 1. A perfectly sorted list has zero inversions and scores 1.0. A fully reversed list scores 0.0.
 
-Walk through the permutation left to right. Every time a pair of neighbours is in the right order, that's one point. Divide by the total number of pairs to get a score between 0.0 and 1.0.
+$\text{fitness}(p) = 1 - \frac{\text{inversions}(p)}{\binom{n}{2}}$
 
-Why this works: it creates a smooth gradient. A completely reversed list scores 0.0 — every pair is wrong. A perfectly sorted list scores 1.0 — every pair is right. A mostly-wrong permutation that happens to have a few pairs in order still scores above zero, and that's enough for selection to favour it over something worse. Over many generations, the population drifts toward 1.0.
+For 5 elements, that's up to 10 possible inversions and 11 distinct fitness levels. For 9 elements, 36 levels. For 20, 190. The more elements, the finer the gradient — and the more precisely selection can distinguish between a mediocre permutation and a slightly-less-mediocre one. Darwin appreciates the subtlety.
 
-For `[3, 1, 4, 2, 5]` with 4 adjacent pairs:
+**Darwin's notebook — `[3, 1, 4, 2, 5]`:**
 
-| Pair | In order? |
-|------|-----------|
-| 3 ≤ 1 | ✗ |
-| 1 ≤ 4 | ✓ |
-| 4 ≤ 2 | ✗ |
-| 2 ≤ 5 | ✓ |
+> *"Specimen has 10 possible pair relationships. Three are inverted: (3,1), (3,2), and (4,2). Fitness: 1 − 3/10 = 0.70. Promising, but not ready for publication."*
 
-2 out of 4 correct → fitness = **0.50**
+**Compared to `[1, 3, 2, 4, 5]`:**
 
-Compare that to `[1, 3, 2, 4, 5]`:
+> *"Only one inversion remains: (3,2). Fitness: 0.90. Nearly there. One good mutation away from perfection."*
 
-| Pair | In order? |
-|------|-----------|
-| 1 ≤ 3 | ✓ |
-| 3 ≤ 2 | ✗ |
-| 2 ≤ 4 | ✓ |
-| 4 ≤ 5 | ✓ |
-
-3 out of 4 correct → fitness = **0.75**
-
-Tournament selection picks the second one. That's the gradient doing its job.
+Tournament selection picks the second one. Twenty percentage points of separation from a single swap — that's the gradient doing its job.
 
 ### How it works
 
 1. Generate a **population** of random permutations of the input list
-2. **Score** each permutation using the fitness function above
-3. **Select** the fittest individuals via tournament selection (pick 3 at random, keep the best)
-4. **Crossover** — pairs of parents swap segments of their ordering to produce offspring (ordered crossover, preserving permutation validity)
-5. **Mutate** — randomly shuffle a subset of positions in some offspring
-6. **Elitism** — the single best individual ever seen (Hall of Fame) is always carried forward, so fitness never regresses
-7. Repeat until fitness reaches 1.0 (perfectly sorted) or the generation budget runs out
+2. Darwin scores each one by counting inversions
+3. **Tournament selection** — pick 3 at random, keep the fittest. Repeat until we have enough parents
+4. **Produce offspring** — each offspring gets either crossover (two parents swap segments of their ordering) or mutation (randomly shuffle some positions), never both. The split is controlled by `--crossover-rate` and `--mutation-rate`; whatever probability is left over produces clones
+5. **Survival of the fittest** — parents and offspring are thrown into the same pool. Only the best `n` survive to the next generation. This is the mu+lambda strategy: the old guard has to compete with the young. No free rides
+6. Repeat until fitness hits 1.0 or the generation budget runs out
+
+Mutation strength scales with list size: each position has a `2/n` chance of being shuffled. For 5 elements, that's a 40% chance per position — aggressive, exploratory. For 20 elements, 10% — gentler, preserving more of the structure that selection worked hard to build.
 
 ### Worked example
 
 ```
 Input: [5, 3, 1, 4, 2]
 Population size: 50
-4 adjacent pairs to get right
+10 possible inversions to eliminate
 
-Gen  0: Best [3, 1, 5, 4, 2]  fitness 25%  (1/4 pairs correct)
-        Avg fitness across population: ~18%
-        Most individuals are random noise.
+Gen  0: Best [3, 1, 5, 4, 2]  fitness 70%  (3 inversions)
+        Darwin notes: "Mostly noise. A few specimens show faint promise."
 
-Gen  3: Best [1, 3, 2, 4, 5]  fitness 75%  (3/4 pairs correct)
-        Selection has killed off the worst permutations.
-        Crossover between [1,3,5,4,2] and [3,1,2,4,5] produced this.
+Gen  3: Best [1, 3, 2, 4, 5]  fitness 90%  (1 inversion)
+        Darwin notes: "Selection is working. The unfit have been culled.
+        A crossover between [1,3,5,4,2] and [3,1,2,4,5] produced this."
 
-Gen  7: Best [1, 2, 3, 4, 5]  fitness 100% (4/4 pairs correct)
-        ✅ Converged. Darwin nods approvingly.
+Gen  5: Best [1, 2, 3, 4, 5]  fitness 100% (0 inversions)
+        ✅ Darwin nods approvingly. The species has converged.
 ```
 
 For 5 elements there are only 120 possible permutations. A population of 50 covers nearly half the search space on the first generation alone. Convergence is near-instant.
 
+### When does the species go extinct?
+
+```
+Input: [20, 19, 18, ..., 2, 1]   (fully reversed, 20 elements)
+Population size: 50
+190 inversions to eliminate. Search space: 2.4 × 10¹⁸ permutations.
+
+Gen   0: Best fitness 62%   Darwin notes: "A vast wilderness. 50 explorers."
+Gen  50: Best fitness 89%   Darwin notes: "Progress, but slowing."
+Gen 200: Best fitness 96%   Darwin notes: "So close. Yet the last inversions resist."
+Gen 500: Best fitness 98%   💀 Budget exhausted. Darwin closes his notebook.
+         "The species showed remarkable adaptation, but 50 individuals
+          were not enough to explore a space this large."
+```
+
+The search space grows factorially. 50 individuals can cover half of 120 permutations (5 elements), but they're a rounding error in 2.4 × 10¹⁸ (20 elements). More individuals help — 100 or 200 can push through where 50 cannot.
+
 ### How does list size affect convergence?
 
-More elements, worse odds. The search space grows factorially — 5 elements is 120 permutations, 10 is 3.6 million, 15 is over a trillion. The default population of 50 becomes a vanishingly small sample.
+Each cell is the percentage of trials that converged within 500 generations, tested across 20 runs per configuration:
 
-Each cell is the percentage of random starting orderings that converged within 500 generations, tested across 20 trials:
-
-| Elements | Permutations | pop=50 | pop=100 | pop=200 | Avg gens (pop=50) |
-|----------|--------------|--------|---------|---------|-------------------|
+| Elements | Permutations | pop=50 | pop=100 | pop=200 | Avg gens |
+|----------|--------------|--------|---------|---------|----------|
 | 3 | 6 | 100% | 100% | 100% | 0 |
-| 5 | 120 | 100% | 100% | 100% | 20 |
-| 8 | 40,320 | 40% | 65% | 90% | 339 |
-| 10 | 3,628,800 | 30% | 30% | 35% | 383 |
-| 15 | 1.3 trillion | 0% | 0% | 0% | 500 |
+| 5 | 120 | 100% | 100% | 100% | 1–3 |
+| 8 | 40,320 | 100% | 100% | 100% | 8–19 |
+| 10 | 3,628,800 | 100% | 100% | 100% | 15–42 |
+| 15 | 1.3 trillion | 100% | 100% | 100% | 47–115 |
+| 20 | 2.4 × 10¹⁸ | 80% | 100% | 100% | 101–234 |
 
-At 3–5 elements, it always converges. At 8, throwing more individuals at the problem helps — doubling from 50 to 100 nearly doubles the success rate, and 200 gets it to 90%. At 10, even quadrupling the population barely moves the needle. At 15, nothing converges within 500 generations regardless of population size.
-
-Mutation rate matters more than population size at the margins. Higher mutation keeps the gene pool diverse and prevents premature convergence on a local optimum:
-
-| Mutation rate | Convergence (n=10, pop=50) | Avg gens |
-|---------------|----------------------------|----------|
-| 0.05 | 5% | 476 |
-| 0.2 | 10% | 451 |
-| 0.5 | 20% | 412 |
-| 0.8 | 50% | 354 |
-
-At 80% mutation the algorithm is almost more random search than evolution — but for a 10-element list, that chaos is exactly what's needed to stumble onto the answer.
+Up to 15 elements, it converges every time regardless of population size. At 20, a population of 50 starts to struggle — 80% convergence — but doubling to 100 brings it back to 100%. The mu+lambda strategy means the best individual is never lost between generations, so once the population finds a good permutation, it only gets better from there.
 
 **Complexity:**
-- Time: O(generations × population × n) — each generation evaluates up to `population_size` individuals, each evaluation is O(n)
+- Time: O(generations × population × n²) — each generation evaluates up to `population_size` individuals, each evaluation counts inversions in O(n²)
 - Space: O(population × n)
-- Convergence: not guaranteed — the species may go extinct
+- Convergence: likely for n ≤ 15, needs larger populations beyond that
 
 Options:
 - `--max-generations <n>` — generation budget before extinction (default `500`)
 - `--population-size <n>` — individuals per generation (default `50`, min `2`)
-- `--mutation-rate <0.0–1.0>` — probability of mutating an individual (default `0.2`)
-- `--crossover-rate <0.0–1.0>` — probability of crossover between parents (default `0.7`)
+- `--mutation-rate <0.0–1.0>` — probability of mutation per offspring (default `0.2`)
+- `--crossover-rate <0.0–1.0>` — probability of crossover per offspring (default `0.7`)
+- `--visualize` / `-v` — animated bar chart with sound showing evolution in real time
+
+Note: `crossover-rate + mutation-rate` must be ≤ 1.0. The remainder is the probability of cloning — offspring passed through unchanged.
 
 ```bash
 big-oh-no darwin 5 3 1 4 2
+big-oh-no darwin -v 5 3 1 4 2
 big-oh-no darwin --max-generations 200 9 1 8 2 7
-big-oh-no darwin --population-size 100 --mutation-rate 0.5 5 3 1 4 2
-big-oh-no darwin --mutation-rate 0.05 --crossover-rate 0.9 10 9 8 7 6 5 4 3 2 1
+big-oh-no darwin --population-size 100 --mutation-rate 0.5 --crossover-rate 0.5 5 3 1 4 2
+big-oh-no darwin --visualize --population-size 100 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1
 ```
 
 ---
-
 ## 🫠 Vibe Sort
 
 *"Why think when you can just feel it?"*

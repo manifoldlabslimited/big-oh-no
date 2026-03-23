@@ -242,9 +242,9 @@ def test_darwin_sort_fitness_zero_when_reversed():
 
 
 def test_darwin_sort_fitness_partial():
-    # [1, 3, 2, 4, 5] → 3 out of 4 pairs correct
+    # [1, 3, 2, 4, 5] → 1 inversion (3,2) out of 10 possible → 1 - 1/10 = 0.9
     fit = darwin_sort.fitness([1, 3, 2, 4, 5])
-    assert abs(fit[0] - 0.75) < 1e-9
+    assert abs(fit[0] - 0.9) < 1e-9
 
 
 def test_darwin_sort_best_returned_on_timeout(monkeypatch):

@@ -189,7 +189,7 @@ class TestDarwinCommand:
         assert result.exit_code != 0
 
     def test_mutation_rate_option_succeeds(self, runner):
-        result = runner.invoke(cli, ["darwin", "--mutation-rate", "0.5", "3", "1", "2"])
+        result = runner.invoke(cli, ["darwin", "--mutation-rate", "0.3", "--crossover-rate", "0.7", "3", "1", "2"])
         assert result.exit_code == 0, result.output
 
     def test_mutation_rate_out_of_range_fails(self, runner):
@@ -197,5 +197,5 @@ class TestDarwinCommand:
         assert result.exit_code != 0
 
     def test_crossover_rate_option_succeeds(self, runner):
-        result = runner.invoke(cli, ["darwin", "--crossover-rate", "0.9", "3", "1", "2"])
+        result = runner.invoke(cli, ["darwin", "--crossover-rate", "0.8", "--mutation-rate", "0.2", "3", "1", "2"])
         assert result.exit_code == 0, result.output
