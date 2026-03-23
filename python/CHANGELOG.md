@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.5.0 (2026-03-23)
+
+### Features
+
+- Visualization framework, Darwin Sort GA overhaul, CLI cleanup
+  ([`cc4094c`](https://github.com/manifoldlabslimited/big-oh-no/commit/cc4094c430cbcc8d27b5d536337069d723aa5398))
+
+
 ## v1.4.0 (2026-03-19)
 
 ### Features
