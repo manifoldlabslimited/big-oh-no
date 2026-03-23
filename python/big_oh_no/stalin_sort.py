@@ -140,38 +140,91 @@ def create_survival_bar(percentage):
     return f"[{color}]{'█' * filled}[/{color}][dim]{'░' * empty}[/dim]"
 
 
+def _bar(value, scale, char="█"):
+    return char * int(value * scale)
+
+
 def create_comparison_visual(original, survivors, eliminated):
     """Create a visual comparison of before/after."""
     max_val = max(original) if original else 1
-    bar_scale = 25 / max_val
-    
+    scale = 25 / max_val
+    # Build a mutable copy so we can mark off duplicates correctly.
+    remaining_eliminated = list(eliminated)
+
     console.print(Panel(
         "[bold]Before vs After[/bold]",
         style="cyan",
         box=box.HEAVY_HEAD,
     ))
-    
-    # Before - showing which will survive
+
     console.print("\n[bold yellow]📋 Before (with fates):[/bold yellow]")
     for num in original:
-        bar_len = int(num * bar_scale)
-        bar = "█" * bar_len
-        if num in survivors:
-            console.print(f"  [dim]{num:3d}[/dim] │[green]{bar}[/green] [green]✓[/green]")
+        if num in remaining_eliminated:
+            remaining_eliminated.remove(num)
+            console.print(f"  [dim]{num:3d}[/dim] │[red]{_bar(num, scale)}[/red] [red]✗[/red]")
         else:
-            console.print(f"  [dim]{num:3d}[/dim] │[red]{bar}[/red] [red]✗[/red]")
-    
-    # After
+            console.print(f"  [dim]{num:3d}[/dim] │[green]{_bar(num, scale)}[/green] [green]✓[/green]")
+
     console.print("\n[bold green]✅ After (survivors only):[/bold green]")
     for num in survivors:
-        bar_len = int(num * bar_scale)
-        bar = "█" * bar_len
-        console.print(f"  [dim]{num:3d}[/dim] │[green]{bar}[/green]")
-    
-    # Eliminated (graveyard)
+        console.print(f"  [dim]{num:3d}[/dim] │[green]{_bar(num, scale)}[/green]")
+
     if eliminated:
         console.print("\n[bold red]💀 The Fallen:[/bold red]")
         for num in eliminated:
-            bar_len = int(num * bar_scale)
-            bar = "░" * bar_len
-            console.print(f"  [dim strikethrough]{num:3d}[/dim strikethrough] │[dim]{bar}[/dim]")
+            console.print(f"  [dim strikethrough]{num:3d}[/dim strikethrough] │[dim]{_bar(num, scale, '░')}[/dim]")
+
+
+# ── Visualization generator ──────────────────────────────────────────────────
+
+def stalin_sort_viz(numbers, result=None):
+    """Generator that yields VizFrames for the visualization.
+
+    Same logic as stalin_sort but yields a frame per element inspected.
+    Each frame includes a log_line for the running text log.
+
+    Pass a dict as *result* to receive ``{"survivors": [...], "eliminated": [...]}``
+    once the generator is exhausted.
+    """
+    from .visualizer import Action, VizFrame
+
+    bars = list(numbers)
+    n = len(bars)
+    eliminated = []
+
+    yield VizFrame(bars=list(bars), highlighted=[], action=Action.COMPARE,
+                   label="Inspecting the population...",
+                   log_line="[dim]Beginning the purge...[/dim]")
+
+    current_max = bars[0]
+
+    yield VizFrame(bars=list(bars), highlighted=[0], action=Action.PLACE,
+                   label=f"{bars[0]} takes the lead. Welcome, comrade.",
+                   log_line=f"[green]✓[/green] [bold cyan]{bars[0]}[/bold cyan] takes the lead. [dim]Welcome, comrade.[/dim]")
+
+    i = 1
+    while i < len(bars):
+        yield VizFrame(bars=list(bars), highlighted=[i], action=Action.COMPARE,
+                       label=f"Inspecting {bars[i]}...")
+
+        if bars[i] >= current_max:
+            current_max = bars[i]
+            yield VizFrame(bars=list(bars), highlighted=[i], action=Action.PLACE,
+                           label=f"{bars[i]} maintains order. Approved.",
+                           log_line=f"[green]✓[/green] [bold cyan]{bars[i]}[/bold cyan] maintains order. [dim]Approved.[/dim]")
+            i += 1
+        else:
+            val = bars[i]
+            eliminated.append(val)
+            yield VizFrame(bars=list(bars), highlighted=[i], action=Action.ELIMINATE,
+                           label=f"{val} is out of order! Eliminated. 💀",
+                           log_line=f"[red]✗[/red] [bold red]{val}[/bold red] is out of order! [dim italic]Eliminated.[/dim italic] 💀")
+            bars.pop(i)
+
+    yield VizFrame(bars=list(bars), highlighted=list(range(len(bars))), action=Action.DONE,
+                   label=f"Purge complete. {len(bars)}/{n} survived.",
+                   log_line=f"\n[bold green]✨ Purge complete. {len(bars)}/{n} survived.[/bold green]")
+
+    if result is not None:
+        result["survivors"] = list(bars)
+        result["eliminated"] = eliminated

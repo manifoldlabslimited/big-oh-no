@@ -13,7 +13,7 @@ import time
 
 import numpy as np
 from deap import algorithms, base, creator, tools
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from rich import box
 from rich.align import Align
 from rich.panel import Panel
@@ -38,6 +38,16 @@ class _DarwinSortParams(BaseModel):
     population_size: int = Field(ge=2)
     crossover_prob: float = Field(ge=0.0, le=1.0)
     mutation_prob: float = Field(ge=0.0, le=1.0)
+
+    @model_validator(mode="after")
+    def _check_prob_sum(self):
+        if self.crossover_prob + self.mutation_prob > 1.0:
+            raise ValueError(
+                "crossover_prob + mutation_prob must be ≤ 1.0 "
+                f"(got {self.crossover_prob} + {self.mutation_prob} = "
+                f"{self.crossover_prob + self.mutation_prob})"
+            )
+        return self
 
 
 # ── Flavor text ──────────────────────────────────────────────────────────────
@@ -80,12 +90,15 @@ if not hasattr(creator, "IndividualEvolution"):
 # ── Pure helpers ──────────────────────────────────────────────────────────────
 
 def fitness(values):
-    """Fraction of adjacent pairs in order. Returns a DEAP-style 1-tuple."""
+    """1 − (inversions / max_inversions).  Kendall-tau distance gives much
+    finer granularity than counting adjacent pairs, so selection pressure
+    actually works."""
     n = len(values)
     if n <= 1:
         return (1.0,)
-    correct = sum(1 for i in range(n - 1) if values[i] <= values[i + 1])
-    return (correct / (n - 1),)
+    max_inv = n * (n - 1) / 2
+    inversions = sum(1 for i in range(n) for j in range(i + 1, n) if values[i] > values[j])
+    return (1.0 - inversions / max_inv,)
 
 
 def _score(result):
@@ -111,7 +124,7 @@ def _build_toolbox(numbers):
     tb.register("population", tools.initRepeat, list, tb.individual)
     tb.register("evaluate", evaluate)
     tb.register("mate", tools.cxOrdered)
-    tb.register("mutate", tools.mutShuffleIndexes, indpb=0.05)
+    tb.register("mutate", tools.mutShuffleIndexes, indpb=2.0 / max(len(indices), 1))
     tb.register("select", tools.selTournament, tournsize=DEFAULT_TOURNAMENT_SIZE)
     return tb
 
@@ -122,7 +135,8 @@ def _evolve(numbers, max_generations, population_size, crossover_prob, mutation_
     """
     Run the GA and return (result, generation, elapsed, converged, hof, logbook).
 
-    This is the pure algorithm with zero UI side-effects.
+    Uses DEAP's eaMuPlusLambda — parents compete with offspring so the
+    best individual is never lost (built-in elitism).
     """
     toolbox = _build_toolbox(numbers)
     pop = toolbox.population(n=population_size)
@@ -133,13 +147,15 @@ def _evolve(numbers, max_generations, population_size, crossover_prob, mutation_
     stats.register("max", np.max)
     stats.register("min", np.min)
 
-    # Evaluate initial population so eaSimple doesn't double-evaluate
+    # Evaluate initial population.
     for ind in pop:
         ind.fitness.values = toolbox.evaluate(ind)
 
     started = time.time()
-    pop, logbook = algorithms.eaSimple(
+    pop, logbook = algorithms.eaMuPlusLambda(
         pop, toolbox,
+        mu=population_size,
+        lambda_=population_size,
         cxpb=crossover_prob,
         mutpb=mutation_prob,
         ngen=max_generations,
@@ -153,7 +169,6 @@ def _evolve(numbers, max_generations, population_size, crossover_prob, mutation_
     converged = best_fitness == 1.0
     result = _decode(hof[0], numbers)
 
-    # Find the generation convergence happened
     max_fits = logbook.select("max")
     generation = next((i for i, f in enumerate(max_fits) if f == 1.0), max_generations)
 
@@ -203,7 +218,6 @@ def _animate(numbers, result, generation, elapsed, converged, hof, logbook,
              max_generations, population_size, crossover_prob, mutation_prob):
     """Render the full Darwin Sort CLI experience from a completed logbook."""
     best_fitness = _score(result)
-    n_pairs = len(numbers) - 1
     gen0 = logbook[0]
 
     # Phase 1: Header + config
@@ -257,14 +271,13 @@ def _animate(numbers, result, generation, elapsed, converged, hof, logbook,
 
             show_detail = gen <= 20 or gen % 25 == 0 or rec["max"] == 1.0
             if show_detail:
-                correct_pairs = round(rec["max"] * n_pairs)
                 time.sleep(FRAME_DELAY)
                 progress.update(
                     task_id,
                     completed=min(gen, generation),
                     description=(
                         f"[green]Gen {gen}:[/green] "
-                        f"[dim]({correct_pairs}/{n_pairs} pairs · "
+                        f"[dim](fitness {rec['max']:.0%} · "
                         f"avg {rec['avg']:.0%})[/dim] "
                         f"[dim italic]{random.choice(GENERATION_REMARKS)}[/dim italic]"
                     ),
@@ -367,7 +380,7 @@ def create_result_table(original, result, generations, elapsed, converged, logbo
     table.add_row("Evolution time", f"[green]{elapsed:.4f}s[/green]")
     table.add_row(
         "Final fitness",
-        f"{_fitness_bar(best_fitness)} [yellow]{correct}/{n_pairs}[/yellow] pairs",
+        f"{_fitness_bar(best_fitness)} [yellow]{best_fitness:.0%}[/yellow]",
     )
 
     if logbook and len(logbook) > 0:
@@ -391,8 +404,6 @@ def create_result_table(original, result, generations, elapsed, converged, logbo
 def create_result_panel(original, result, generations, elapsed, converged):
     """Final summary panel for the CLI."""
     best_fitness = _score(result)
-    n_pairs = max(len(result) - 1, 0)
-    correct = round(best_fitness * n_pairs) if n_pairs else 0
 
     if converged:
         message = (
@@ -410,7 +421,7 @@ def create_result_panel(original, result, generations, elapsed, converged):
             "Darwin closes his notebook.[/bold yellow]\n\n"
             f"[dim]Original:[/dim]    {original}\n"
             f"[dim]Best:[/dim]        [bold cyan]{result}[/bold cyan]\n"
-            f"[dim]Fitness:[/dim]     {correct}/{n_pairs} pairs in order\n"
+            f"[dim]Fitness:[/dim]     {best_fitness:.0%}\n"
             f"[dim]Generations:[/dim] {generations}\n"
             f"[dim]Time:[/dim]        {elapsed:.4f}s"
         )
@@ -418,3 +429,119 @@ def create_result_panel(original, result, generations, elapsed, converged):
         style = "yellow"
 
     return Panel(message, title=title, box=box.DOUBLE, style=style)
+
+
+# ── Visualization generator ──────────────────────────────────────────────────
+
+def darwin_sort_viz(
+    numbers,
+    max_generations=500,
+    population_size=DEFAULT_POPULATION_SIZE,
+    crossover_prob=DEFAULT_CROSSOVER_PROB,
+    mutation_prob=DEFAULT_MUTATION_PROB,
+    result=None,
+):
+    """Generator that yields VizFrames for the visualization.
+
+    Runs the GA step-by-step (no eaSimple) so we can yield a frame per
+    generation showing the best individual as bars.
+
+    Pass a dict as *result* to receive the final sort results.
+    """
+    from .visualizer import Action, VizFrame
+
+    _DarwinSortParams(
+        max_generations=max_generations,
+        population_size=population_size,
+        crossover_prob=crossover_prob,
+        mutation_prob=mutation_prob,
+    )
+
+    n = len(numbers)
+
+    if n <= 1:
+        yield VizFrame(bars=list(numbers), highlighted=list(range(n)),
+                       action=Action.DONE, label="Already sorted.",
+                       log_line="[green]Already sorted. Darwin rests.[/green]")
+        if result is not None:
+            result.update(sorted=list(numbers), generations=0, elapsed=0.0, converged=True)
+        return
+
+    toolbox = _build_toolbox(numbers)
+    pop = toolbox.population(n=population_size)
+    hof = tools.HallOfFame(1)
+
+    # Evaluate initial population.
+    for ind in pop:
+        ind.fitness.values = toolbox.evaluate(ind)
+    hof.update(pop)
+
+    best = _decode(hof[0], numbers)
+    best_fit = hof[0].fitness.values[0]
+
+    yield VizFrame(bars=best, highlighted=[], action=Action.EVOLVE,
+                   label=f"Gen 0 — fitness {best_fit:.0%}",
+                   log_line=f"[dim]Gen 0:[/dim] best fitness [yellow]{best_fit:.0%}[/yellow] — {random.choice(GENERATION_REMARKS)}")
+
+    started = time.time()
+    converged = best_fit == 1.0
+    final_gen = 0
+
+    for gen in range(1, max_generations + 1):
+        if converged:
+            break
+
+        # varOr produces offspring via crossover OR mutation (same as eaMuPlusLambda).
+        offspring = algorithms.varOr(pop, toolbox, population_size, crossover_prob, mutation_prob)
+
+        # Evaluate new individuals.
+        invalid = [ind for ind in offspring if not ind.fitness.valid]
+        for ind in invalid:
+            ind.fitness.values = toolbox.evaluate(ind)
+
+        # Mu+Lambda selection: best from parents + offspring.
+        pop[:] = toolbox.select(pop + offspring, population_size)
+        hof.update(pop)
+
+        prev_fit = best_fit
+        best = _decode(hof[0], numbers)
+        best_fit = hof[0].fitness.values[0]
+        final_gen = gen
+        converged = best_fit == 1.0
+
+        # Highlight indices where adjacent pairs are now in order.
+        highlighted = [i for i in range(n - 1) if best[i] <= best[i + 1]]
+
+        # Pick action: EVOLVE normally, SHUFFLE when fitness improved (breakthrough).
+        if converged:
+            action = Action.DONE
+        elif best_fit > prev_fit:
+            action = Action.SHUFFLE   # mutation/crossover produced something better
+        else:
+            action = Action.EVOLVE
+
+        # Yield a frame for every generation, but only log milestones.
+        log_line = ""
+        if best_fit > prev_fit or gen <= 5 or gen % 50 == 0 or converged:
+            remark = random.choice(GENERATION_REMARKS)
+            log_line = (
+                f"[dim]Gen {gen}:[/dim] fitness [yellow]{best_fit:.0%}[/yellow] "
+                f"— {remark}"
+            )
+
+        yield VizFrame(bars=best, highlighted=highlighted, action=action,
+                       label=f"Gen {gen} — fitness {best_fit:.0%}", log_line=log_line)
+
+    elapsed = time.time() - started
+
+    if not converged:
+        yield VizFrame(bars=best, highlighted=list(range(n)), action=Action.DONE,
+                       label=f"Extinct after {final_gen} generations — {best_fit:.0%}",
+                       log_line=f"\n[yellow]💀 Extinct after {final_gen} generations. Best fitness: {best_fit:.0%}[/yellow]")
+    else:
+        yield VizFrame(bars=best, highlighted=list(range(n)), action=Action.DONE,
+                       label=f"Converged at gen {final_gen}.",
+                       log_line=f"\n[bold bright_green]✨ Converged at generation {final_gen}. Darwin approves.[/bold bright_green]")
+
+    if result is not None:
+        result.update(sorted=best, generations=final_gen, elapsed=elapsed, converged=converged)

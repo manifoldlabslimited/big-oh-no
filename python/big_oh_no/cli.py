@@ -205,65 +205,29 @@ def wait(numbers):
     ws.console.print()
 
 
-@cli.command()
-@click.argument('numbers', nargs=-1, type=int, required=True)
-def stalin(numbers):
-    """
-    ☭ Stalin Sort - Order through elimination.
-    
-    Iterates through the list and eliminates any element that is smaller
-    than the current maximum. Survivors form a sorted list.
-    
-    \b
-    Examples:
-        big-oh-no stalin 5 1 9 2 8 3 10
-    """
+def _stalin_verdict(survivors, original):
+    """Return (verdict_text, style) based on survival rate."""
+    rate = (len(survivors) / len(original)) * 100
+    if rate == 100:
+        return "🎖️  Perfect! The list was already in order. No purge needed.", "green"
+    if rate >= 70:
+        return "📈 Acceptable losses. The party is pleased.", "yellow"
+    if rate >= 40:
+        return "⚠️  Significant casualties. But order has been achieved.", "yellow"
+    return "💀 Brutal. But necessary.", "red"
+
+
+def _stalin_results(original, survivors, eliminated):
+    """Print the results table, comparison visual, and verdict panel."""
     from . import stalin_sort as ss
 
-    nums = parse_numbers(numbers)
-
-    original = nums.copy()
-    
-    ss.console.print()
-    ss.console.print(ss.create_header())
-    
-    ss.console.print(Panel(
-        "[bold]How Stalin Sort Works:[/bold]\n\n"
-        "• Iterate through the list from left to right\n"
-        "• Keep track of the current maximum value\n"
-        "• If an element is [green]>= current max[/green], it [green]survives[/green]\n"
-        "• If an element is [red]< current max[/red], it is [red]eliminated[/red]\n"
-        "• Result: A sorted list (of survivors)\n\n"
-        "[dim]Complexity: O(n) time · O(1) space · O(n) casualties[/dim]",
-        title="[bold cyan]💡 Algorithm Explanation[/bold cyan]",
-        box=box.ROUNDED,
-        padding=(1, 2),
-    ))
-    
-    ss.console.print(f"\n[dim]Numbers:[/dim] [bold cyan]{nums}[/bold cyan]")
-    
-    survivors, eliminated = ss.stalin_sort(nums)
-    
     ss.console.print()
     ss.console.print(Align.center(ss.create_result_table(original, survivors, eliminated)))
     ss.console.print()
     ss.create_comparison_visual(original, survivors, eliminated)
-    
-    survival_rate = (len(survivors) / len(original)) * 100
-    
-    if survival_rate == 100:
-        verdict = "🎖️  Perfect! The list was already in order. No purge needed."
-        style = "green"
-    elif survival_rate >= 70:
-        verdict = "📈 Acceptable losses. The party is pleased."
-        style = "yellow"
-    elif survival_rate >= 40:
-        verdict = "⚠️  Significant casualties. But order has been achieved."
-        style = "yellow"
-    else:
-        verdict = "💀 Brutal. But necessary."
-        style = "red"
-    
+
+    verdict, style = _stalin_verdict(survivors, original)
+
     ss.console.print()
     ss.console.print(Panel(
         f"[bold {style}]{verdict}[/bold {style}]\n\n"
@@ -275,6 +239,39 @@ def stalin(numbers):
         style=style,
     ))
     ss.console.print()
+
+
+@cli.command()
+@click.option('--visualize', '-v', is_flag=True, help='Animated bar chart visualization with sound.')
+@click.argument('numbers', nargs=-1, type=int, required=True)
+def stalin(visualize, numbers):
+    """
+    ☭ Stalin Sort - Order through elimination.
+    
+    Iterates through the list and eliminates any element that is smaller
+    than the current maximum. Survivors form a sorted list.
+    
+    Use --visualize for an animated bar chart with sound.
+    
+    \b
+    Examples:
+        big-oh-no stalin 5 1 9 2 8 3 10
+        big-oh-no stalin -v 5 1 9 2 8 3 10
+    """
+    from . import stalin_sort as ss
+
+    nums = parse_numbers(numbers)
+    original = nums.copy()
+
+    if visualize:
+        from .visualizer import run_visualization
+        result = {}
+        run_visualization(ss.stalin_sort_viz(nums, result=result), algo_name="☭ Stalin Sort", delay=0.4)
+        _stalin_results(original, result["survivors"], result["eliminated"])
+        return
+
+    survivors, eliminated = ss.stalin_sort(nums)
+    _stalin_results(original, survivors, eliminated)
 
 
 @cli.command()
@@ -556,6 +553,7 @@ def digit(numbers):
 
 
 @cli.command()
+@click.option('--visualize', '-v', is_flag=True, help='Animated bar chart visualization with sound.')
 @click.option(
     "--max-generations",
     default=500,
@@ -585,7 +583,7 @@ def digit(numbers):
     help="Probability of crossover between parents (0.0=clones, 1.0=always mix).",
 )
 @click.argument('numbers', nargs=-1, type=int, required=True)
-def darwin(max_generations, population_size, mutation_rate, crossover_rate, numbers):
+def darwin(visualize, max_generations, population_size, mutation_rate, crossover_rate, numbers):
     """
     🧬 Darwin Sort - Survival of the fittest permutation.
 
@@ -594,9 +592,12 @@ def darwin(max_generations, population_size, mutation_rate, crossover_rate, numb
     selection, crossover, and mutation until the sorted order emerges
     — or the species goes extinct trying.
 
+    Use --visualize for an animated bar chart with sound.
+
     \b
     Examples:
         big-oh-no darwin 5 3 1 4 2
+        big-oh-no darwin -v 5 3 1 4 2
         big-oh-no darwin --max-generations 200 9 1 8 2 7
         big-oh-no darwin --population-size 100 --mutation-rate 0.5 5 3 1 4 2
     """
@@ -604,6 +605,32 @@ def darwin(max_generations, population_size, mutation_rate, crossover_rate, numb
 
     nums = parse_numbers(numbers)
     original = nums.copy()
+
+    if visualize:
+        from .visualizer import run_visualization
+        result = {}
+        run_visualization(
+            ds.darwin_sort_viz(
+                nums, max_generations=max_generations,
+                population_size=population_size,
+                crossover_prob=crossover_rate,
+                mutation_prob=mutation_rate,
+                result=result,
+            ),
+            algo_name="🧬 Darwin Sort",
+            delay=0.05,
+        )
+        r = result
+        ds.console.print()
+        ds.console.print(Align.center(ds.create_result_table(
+            original, r["sorted"], r["generations"], r["elapsed"], r["converged"],
+        )))
+        ds.console.print()
+        ds.console.print(ds.create_result_panel(
+            original, r["sorted"], r["generations"], r["elapsed"], r["converged"],
+        ))
+        ds.console.print()
+        return
 
     result, generations, elapsed, converged, logbook = ds.darwin_sort(
         nums,
