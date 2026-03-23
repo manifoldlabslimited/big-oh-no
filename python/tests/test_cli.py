@@ -199,3 +199,29 @@ class TestDarwinCommand:
     def test_crossover_rate_option_succeeds(self, runner):
         result = runner.invoke(cli, ["darwin", "--crossover-rate", "0.8", "--mutation-rate", "0.2", "3", "1", "2"])
         assert result.exit_code == 0, result.output
+
+
+
+class TestStalinVisualizeCommand:
+    def test_visualize_flag_succeeds(self, runner):
+        result = runner.invoke(cli, ["stalin", "-v", "5", "1", "9", "2", "8"])
+        assert result.exit_code == 0, result.output
+
+    def test_visualize_long_flag_succeeds(self, runner):
+        result = runner.invoke(cli, ["stalin", "--visualize", "3", "1", "2"])
+        assert result.exit_code == 0, result.output
+
+
+class TestDarwinVisualizeCommand:
+    def test_visualize_flag_succeeds(self, runner):
+        result = runner.invoke(cli, ["darwin", "-v", "3", "1", "2"])
+        assert result.exit_code == 0, result.output
+
+    def test_visualize_with_options_succeeds(self, runner):
+        result = runner.invoke(cli, [
+            "darwin", "-v",
+            "--max-generations", "50",
+            "--population-size", "20",
+            "3", "1", "2",
+        ])
+        assert result.exit_code == 0, result.output
